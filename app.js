@@ -3,74 +3,80 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para guardar datos en localStorage
     function saveDataToLocalStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-        console.log(`✅ Guardado en localStorage: ${key}`, data);
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+            console.log(`✅ Guardado en localStorage: ${key}`, data);
+        } catch (error) {
+            console.error("❌ Error al guardar en localStorage:", error);
+        }
     }
 
     // Función para cargar datos desde localStorage
     function loadDataFromLocalStorage(key) {
-        const data = JSON.parse(localStorage.getItem(key)) || [];
-        console.log(`📂 Cargando datos desde localStorage: ${key}`, data);
-        return data;
+        try {
+            const data = JSON.parse(localStorage.getItem(key)) || [];
+            console.log(`📂 Cargando datos desde localStorage: ${key}`, data);
+            return data;
+        } catch (error) {
+            console.error("❌ Error al cargar datos desde localStorage:", error);
+            return [];
+        }
     }
 
     // Función para renderizar la tabla
     function renderTable(key, tableBodyId) {
+        console.log(`🔄 Intentando renderizar tabla para: ${key}`);
         const data = loadDataFromLocalStorage(key);
         const tableBody = document.querySelector(tableBodyId);
-        tableBody.innerHTML = '';
+        if (!tableBody) {
+            console.error(`❌ No se encontró el tbody para: ${tableBodyId}`);
+            return;
+        }
+        tableBody.innerHTML = ''; // Limpia la tabla antes de renderizar
+
+        if (data.length === 0) {
+            console.warn(`⚠️ No hay datos para renderizar en: ${key}`);
+        }
+
         data.forEach((item, index) => {
             const newRow = document.createElement('tr');
             let rowContent = `<td>${item.nombre || item.producto || item.concepto}</td>`;
             rowContent += `<td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>`;
             rowContent += `
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
                 </td>
             `;
             newRow.innerHTML = rowContent;
             tableBody.appendChild(newRow);
         });
+
+        console.log(`✅ Tabla renderizada para: ${key}`, data);
     }
 
-    // Función para editar una fila
-    window.editRow = function (key, index, tableBodyId) {
-        const data = loadDataFromLocalStorage(key);
-        const item = data[index];
-        const nombre = prompt("Editar Nombre/Producto/Concepto:", item.nombre || item.producto || item.concepto);
-        const telefonoCantidadMontoCargo = prompt(
-            "Editar Teléfono/Cantidad/Monto/Cargo:",
-            item.telefono || item.cantidad || item.monto || item.cargo
-        );
-        if (nombre !== null && telefonoCantidadMontoCargo !== null) {
-            if (item.nombre !== undefined) {
-                item.nombre = nombre;
-                item.telefono = telefonoCantidadMontoCargo;
-            } else if (item.producto !== undefined) {
-                item.producto = nombre;
-                item.cantidad = telefonoCantidadMontoCargo;
-            } else if (item.concepto !== undefined) {
-                item.concepto = nombre;
-                item.monto = telefonoCantidadMontoCargo;
-            } else if (item.cargo !== undefined) {
-                item.nombre = nombre;
-                item.cargo = telefonoCantidadMontoCargo;
-            }
-            saveDataToLocalStorage(key, data);
-            renderTable(key, tableBodyId);
+    // Función para agregar datos a la tabla y localStorage
+    function addDataToTable(key, tableBodyId, data) {
+        console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
+        if (!data.nombre?.trim() && !data.producto?.trim() && !data.concepto?.trim()) {
+            console.warn("⚠️ No se pueden agregar datos vacíos");
+            return;
         }
-    };
+        const currentData = loadDataFromLocalStorage(key);
+        currentData.push(data);
+        saveDataToLocalStorage(key, currentData);
+        renderTable(key, tableBodyId);
+    }
 
     // Función para eliminar una fila
     window.deleteRow = function (key, index, tableBodyId) {
+        console.log(`🗑️ Eliminando fila ${index} de: ${key}`);
         const data = loadDataFromLocalStorage(key);
-        data.splice(index, 1);
+        data.splice(index, 1); // Elimina el elemento en el índice especificado
         saveDataToLocalStorage(key, data);
         renderTable(key, tableBodyId);
     };
 
-    // Función para configurar formularios
+    // Configuración de formularios
     function setupForm(formId, tableBodyId, storageKey) {
         const form = document.getElementById(formId);
         if (!form) {
@@ -80,9 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         form.addEventListener('submit', function (event) {
             event.preventDefault();
-            console.log(`📥 Enviando datos desde el formulario: ${formId}`);
-
-            // Capturar los valores de los campos del formulario
             const nombre = this.querySelector('input[name="nombre"]')?.value.trim() || '';
             const telefono = this.querySelector('input[name="telefono"]')?.value.trim() || '';
             const producto = this.querySelector('input[name="producto"]')?.value.trim() || '';
@@ -91,7 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const monto = this.querySelector('input[name="monto"]')?.value.trim() || '';
             const cargo = this.querySelector('input[name="cargo"]')?.value.trim() || '';
 
-            // Determinar qué datos agregar según el formulario
+            console.log("📥 Capturando datos del formulario:", { nombre, telefono, producto, cantidad, concepto, monto, cargo });
+
             if (formId === 'formClientes') {
                 addDataToTable(storageKey, tableBodyId, { nombre, telefono });
             } else if (formId === 'formAlmacen') {
@@ -102,30 +106,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 addDataToTable(storageKey, tableBodyId, { concepto, monto });
             }
 
-            // Limpiar el formulario después de agregar los datos
-            this.reset();
+            this.reset(); // Limpia el formulario después de agregar
         });
     }
 
     // Función para navegar entre secciones
     window.navigateTo = function (sectionId) {
+        console.log(`🔄 Navegando a la sección: ${sectionId}`);
         const sections = document.querySelectorAll('.content-section');
         sections.forEach(section => {
-            section.classList.toggle('d-none', section.id !== sectionId);
+            if (section.id === sectionId) {
+                section.classList.remove('d-none');
+            } else {
+                section.classList.add('d-none');
+            }
         });
+
+        // Cambiar el título de la sección
         const sectionTitle = document.getElementById('sectionTitle');
         if (sectionTitle) {
             sectionTitle.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
         }
     };
 
-    // Configuración inicial de los formularios
+    // Configuración inicial
     setupForm('formClientes', '#clientesBody', 'clientesData');
     setupForm('formAlmacen', '#almacenBody', 'almacenData');
     setupForm('formTrabajadores', '#trabajadoresBody', 'trabajadoresData');
     setupForm('formCaja', '#cajaBody', 'cajaData');
 
-    // Renderizar las tablas al cargar la página
+    // Renderizar tablas al cargar la página
     renderTable('clientesData', '#clientesBody');
     renderTable('almacenData', '#almacenBody');
     renderTable('trabajadoresData', '#trabajadoresBody');
