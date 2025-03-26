@@ -39,6 +39,70 @@ body, button, input {
     gap: 10px;
 }
 
+/* Estilo para los botones de navegación */
+.btn-navegacion {
+    transition: background-color 0.3s ease;
+}
+
+.btn-navegacion:hover {
+    background-color: #0056b3; /* Azul más oscuro al pasar el cursor */
+}
+
+.btn-navegacion:focus {
+    outline: none;
+    box-shadow: 0 0 5px #0056b3;
+}
+
+/* Botón activo */
+.btn-navegacion.btn-active {
+    background-color: #90ee90;
+    color: black;
+    pointer-events: none; /* Deshabilitar clics en el botón activo */
+}
+
+/* Cambiar el color de fondo de la barra lateral */
+.sidebar {
+    background-color: #F5F5DC;
+    color: white; /* Color del texto */
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+    padding: 20px; /* Espaciado interno */
+}
+
+/* Opcional: Cambiar el color del texto dentro de la barra lateral */
+.sidebar h3 {
+    color: black; 
+}
+
+.sidebar button {
+    color: black; /* Asegura que los botones tengan texto blanco */
+}
+
+/* Ocultar la barra lateral */
+.sidebar-hidden .sidebar {
+    display: none !important;
+}
+
+
+.sidebar-hidden main {
+    margin-left: 0; /* Ajusta el contenido principal */
+}
+
+.logo {
+    max-width: 150px; /* Ancho máximo del logo */
+    height: auto; /* Mantiene la proporción de la imagen */
+    margin: 0 auto; /* Centra el logo horizontalmente */
+    display: block; /* Asegura que se comporte como un bloque */
+}
+
+/* Ocultar la barra lateral */
+.sidebar-hidden .sidebar {
+    display: none; /* Oculta la barra lateral */
+}
+
+.sidebar-hidden main {
+    margin-left: 0; /* Ajusta el contenido principal */
+}
+
 .button {
     padding: 5px 10px;
     border: none;

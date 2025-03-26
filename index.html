@@ -5,23 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard CRUD</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container-fluid">
+        <button id="toggleSidebar" class="btn btn-primary">☰</button> <!-- Botón para alternar -->
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar text-white vh-100">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar text-white vh-100">
                 <div class="position-sticky">
-                    <h3 class="text-center py-3">Mi Dashboard</h3>
+                    <h3 class="text-center py-3">
+                        <img src="logo.png" alt="Logo" class="img-fluid logo">
+                    </h3>
                     <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="navigateTo('clientes')">Clientes</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="navigateTo('almacen')">Almacén</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="navigateTo('trabajadores')">Trabajadores</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="#" onclick="navigateTo('caja')">Caja</a></li>
+                        <li class="nav-item">
+                            <button class="btn btn-navegacion w-100 text-start" onclick="navigateTo('clientes')">CLIENTES</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-navegacion w-100 text-start" onclick="navigateTo('almacen')">ALMACEN</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-navegacion w-100 text-start" onclick="navigateTo('trabajadores')">TRABAJADORES</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-navegacion w-100 text-start" onclick="navigateTo('caja')">CAJA</button>
+                        </li>
                     </ul>
                 </div>
             </nav>
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <h1 id="sectionTitle" class="my-4">Clientes</h1>
+                <h1 id="sectionTitle" class="my-4">CLIENTES</h1>
                 
                 <!-- Sección Clientes -->
                 <div id="clientes" class="content-section">
@@ -34,7 +47,15 @@
                         <thead>
                             <tr><th>Nombre</th><th>Teléfono</th><th>Opciones</th></tr>
                         </thead>
-                        <tbody id="clientesBody"></tbody>
+                        <tbody id="clientesBody">
+                            <tr>
+                                <td>Ejemplo Cliente</td>
+                                <td>123456789</td>
+                                <td>
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Aquí está corregido -->
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 
@@ -49,7 +70,15 @@
                         <thead>
                             <tr><th>Producto</th><th>Cantidad</th><th>Opciones</th></tr>
                         </thead>
-                        <tbody id="almacenBody"></tbody>
+                        <tbody id="almacenBody">
+                            <tr>
+                                <td>Ejemplo Producto</td>
+                                <td>10</td>
+                                <td>
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Aquí también -->
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 
@@ -64,7 +93,15 @@
                         <thead>
                             <tr><th>Nombre</th><th>Cargo</th><th>Opciones</th></tr>
                         </thead>
-                        <tbody id="trabajadoresBody"></tbody>
+                        <tbody id="trabajadoresBody">
+                            <tr>
+                                <td>Ejemplo Trabajador</td>
+                                <td>Gerente</td>
+                                <td>
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Y aquí -->
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 
@@ -79,13 +116,21 @@
                         <thead>
                             <tr><th>Concepto</th><th>Monto</th><th>Opciones</th></tr>
                         </thead>
-                        <tbody id="cajaBody"></tbody>
+                        <tbody id="cajaBody">
+                            <tr>
+                                <td>Pago de Luz</td>
+                                <td>500</td>
+                                <td>
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 También aquí -->
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </main>
         </div>
     </div>
-    <script src="app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

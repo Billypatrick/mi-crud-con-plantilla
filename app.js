@@ -32,27 +32,61 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error(`❌ No se encontró el tbody para: ${tableBodyId}`);
             return;
         }
-        tableBody.innerHTML = ''; // Limpia la tabla antes de renderizar
-
-        if (data.length === 0) {
-            console.warn(`⚠️ No hay datos para renderizar en: ${key}`);
-        }
-
+        tableBody.innerHTML = '';
+    
         data.forEach((item, index) => {
             const newRow = document.createElement('tr');
-            let rowContent = `<td>${item.nombre || item.producto || item.concepto}</td>`;
-            rowContent += `<td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>`;
-            rowContent += `
+            let rowContent = `
+                <td>${item.nombre || item.producto || item.concepto}</td>
+                <td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>
                 <td>
+                    <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
                 </td>
             `;
             newRow.innerHTML = rowContent;
             tableBody.appendChild(newRow);
         });
-
+    
         console.log(`✅ Tabla renderizada para: ${key}`, data);
     }
+    
+    window.editRow = function (key, index, tableBodyId) {
+        console.log(`✏️ Editando fila ${index} de: ${key}`);
+        const data = loadDataFromLocalStorage(key);
+        const item = data[index];
+    
+        // Mostrar un formulario emergente para editar los datos
+        const newValue1 = prompt("Editar primer campo:", item.nombre || item.producto || item.concepto);
+        const newValue2 = prompt("Editar segundo campo:", item.telefono || item.cantidad || item.monto || item.cargo);
+    
+        if (newValue1 !== null && newValue2 !== null) {
+            // Actualizar los valores en el objeto
+            if (item.nombre !== undefined) {
+                item.nombre = newValue1;
+                item.telefono = newValue2;
+            } else if (item.producto !== undefined) {
+                item.producto = newValue1;
+                item.cantidad = newValue2;
+            } else if (item.concepto !== undefined) {
+                item.concepto = newValue1;
+                item.monto = newValue2;
+            } else if (item.cargo !== undefined) {
+                item.nombre = newValue1;
+                item.cargo = newValue2;
+            }
+    
+            // Guardar los datos actualizados en localStorage
+            saveDataToLocalStorage(key, data);
+    
+            // Volver a renderizar la tabla
+            renderTable(key, tableBodyId);
+    
+            console.log(`✅ Fila ${index} actualizada en: ${key}`, item);
+        } else {
+            console.log("⚠️ Edición cancelada");
+        }
+    };
 
     // Función para agregar datos a la tabla y localStorage
     function addDataToTable(key, tableBodyId, data) {
@@ -69,12 +103,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para eliminar una fila
     window.deleteRow = function (key, index, tableBodyId) {
-        console.log(`🗑️ Eliminando fila ${index} de: ${key}`);
-        const data = loadDataFromLocalStorage(key);
-        data.splice(index, 1); // Elimina el elemento en el índice especificado
-        saveDataToLocalStorage(key, data);
-        renderTable(key, tableBodyId);
+        console.log(`🗑️ Intentando eliminar fila ${index} de: ${key}`);
+    
+        Swal.fire({
+            title: "¿Estás seguro?",
+            text: "¡No podrás revertir esto!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Sí, eliminarlo",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario confirma, eliminar la fila
+                const data = loadDataFromLocalStorage(key);
+                data.splice(index, 1);
+                saveDataToLocalStorage(key, data);
+                renderTable(key, tableBodyId);
+                
+                Swal.fire("Eliminado", "El registro ha sido eliminado.", "success");
+            }
+        });
     };
+    
 
     // Configuración de formularios
     function setupForm(formId, tableBodyId, storageKey) {
@@ -121,13 +173,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 section.classList.add('d-none');
             }
         });
-
+    
         // Cambiar el título de la sección
         const sectionTitle = document.getElementById('sectionTitle');
         if (sectionTitle) {
             sectionTitle.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
         }
+    
+        // Resaltar el botón activo
+        const buttons = document.querySelectorAll('.sidebar button');
+        buttons.forEach(button => button.classList.remove('btn-active'));
+        document.querySelector(`button[onclick="navigateTo('${sectionId}')"]`).classList.add('btn-active');
     };
+
+   
+    const toggleButton = document.getElementById('toggleSidebar');
+    const container = document.querySelector('.container-fluid');
+
+    if (!toggleButton) {
+        console.error("❌ No se encontró el botón con id 'toggleSidebar'");
+    }
+    if (!container) {
+        console.error("❌ No se encontró el contenedor con clase 'container-fluid'");
+    }
+
+    toggleButton.addEventListener('click', function () {
+        console.log("✅ Botón clickeado");
+        container.classList.toggle('sidebar-hidden'); // Alterna la clase
+        if (container.classList.contains('sidebar-hidden')) {
+            toggleButton.textContent = '☰'; // Cambia el texto del botón
+        } else {
+            toggleButton.textContent = '☰'; // Cambia el texto del botón
+        }
+    });
+
 
     // Configuración inicial
     setupForm('formClientes', '#clientesBody', 'clientesData');
