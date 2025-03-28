@@ -33,19 +33,49 @@
                     </ul>
                 </div>
             </nav>
+
+            <!-- Modal para agregar datos -->
+<div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Agregar Nuevo Registro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modalForm">
+                    <div class="mb-3">
+                        <label for="modalInput1" class="form-label">Nombre y Apellidos</label>
+                        <input type="text" class="form-control" id="modalInput1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalInput2" class="form-label">Telefono</label>
+                        <input type="text" class="form-control" id="modalInput2" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveModalData">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <h1 id="sectionTitle" class="my-4">CLIENTES</h1>
                 
                 <!-- Sección Clientes -->
                 <div id="clientes" class="content-section">
-                    <form id="formClientes" class="row g-3">
-                        <div class="col-md-5"><input type="text" name="nombre" class="form-control" placeholder="Nombre" required></div>
-                        <div class="col-md-5"><input type="tel" name="telefono" class="form-control" placeholder="Teléfono" required></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal">
+                            Agregar
+                        </button>
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Nombre</th><th>Teléfono</th><th>Opciones</th></tr>
+                            <tr><th>Nombre y Apellidos</th><th>Teléfono</th><th class="table-options">Opciones</th></tr>
                         </thead>
                         <tbody id="clientesBody">
                             <tr>
@@ -61,14 +91,13 @@
 
                 <!-- Sección Almacén -->
                 <div id="almacen" class="content-section d-none">
-                    <form id="formAlmacen" class="row g-3">
-                        <div class="col-md-5"><input type="text" name="producto" class="form-control" placeholder="Producto" required></div>
-                        <div class="col-md-5"><input type="number" name="cantidad" class="form-control" placeholder="Cantidad" required></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal">
+                            Agregar
+                        </button>
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Producto</th><th>Cantidad</th><th>Opciones</th></tr>
+                            <tr><th>Producto</th><th>Cantidad</th><th class="table-options">Opciones</th></tr>
                         </thead>
                         <tbody id="almacenBody">
                             <tr>
@@ -84,14 +113,13 @@
 
                 <!-- Sección Trabajadores -->
                 <div id="trabajadores" class="content-section d-none">
-                    <form id="formTrabajadores" class="row g-3">
-                        <div class="col-md-5"><input type="text" name="nombre" class="form-control" placeholder="Nombre" required></div>
-                        <div class="col-md-5"><input type="text" name="cargo" class="form-control" placeholder="Cargo" required></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal">
+                            Agregar
+                        </button>
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Nombre</th><th>Cargo</th><th>Opciones</th></tr>
+                            <tr><th>Nombre y Apellidos</th><th>Cargo</th><th class="table-options">Opciones</th></tr>
                         </thead>
                         <tbody id="trabajadoresBody">
                             <tr>
@@ -107,14 +135,13 @@
 
                 <!-- Sección Caja -->
                 <div id="caja" class="content-section d-none">
-                    <form id="formCaja" class="row g-3">
-                        <div class="col-md-5"><input type="text" name="concepto" class="form-control" placeholder="Concepto" required></div>
-                        <div class="col-md-5"><input type="number" name="monto" class="form-control" placeholder="Monto" required></div>
-                        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal">
+                            Agregar
+                        </button>
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Concepto</th><th>Monto</th><th>Opciones</th></tr>
+                            <tr><th>Concepto</th><th>Monto</th><th class="table-options">Opciones</th></tr>
                         </thead>
                         <tbody id="cajaBody">
                             <tr>

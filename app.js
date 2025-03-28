@@ -1,6 +1,83 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log("📌 app.js cargado correctamente");
 
+
+    document.getElementById('saveModalData').addEventListener('click', function () {
+        const input1 = document.getElementById('modalInput1').value.trim();
+        const input2 = document.getElementById('modalInput2').value.trim();
+    
+        if (!input1 || !input2) {
+            alert("⚠️ Ambos campos son obligatorios.");
+            return;
+        }
+
+        // Mapeo de etiquetas dinámicas para cada tabla
+    const labelMap = {
+        'clientes': { label1: 'Nombre y Apellidos', label2: 'Teléfono' },
+        'almacen': { label1: 'Producto', label2: 'Cantidad' },
+        'trabajadores': { label1: 'Nombre y Apellidos', label2: 'Cargo' },
+        'caja': { label1: 'Concepto', label2: 'Monto' }
+    };
+
+    // Actualizar las etiquetas del modal dinámicamente
+    document.querySelectorAll('[data-bs-target="#addDataModal"]').forEach(button => {
+        button.addEventListener('click', function () {
+            // Detectar la sección activa usando el atributo data-section del botón
+            const activeSection = this.closest('.content-section').id;
+
+            // Obtener las etiquetas correspondientes
+            const { label1, label2 } = labelMap[activeSection] || {};
+
+            // Actualizar las etiquetas del modal
+            document.querySelector('label[for="modalInput1"]').textContent = label1 || 'Campo 1';
+            document.querySelector('label[for="modalInput2"]').textContent = label2 || 'Campo 2';
+
+            // Limpiar los campos del modal
+            document.getElementById('modalInput1').value = '';
+            document.getElementById('modalInput2').value = '';
+        });
+    });
+    
+        // Detectar la sección activa dinámicamente
+        const activeSection = document.querySelector('.content-section:not(.d-none)');
+        if (!activeSection) {
+            console.error("❌ No se pudo determinar la sección activa.");
+            return;
+        }
+    
+        // Mapear las secciones a las claves de almacenamiento y cuerpos de tabla
+        const sectionMap = {
+            'clientes': { key: 'clientesData', tableBodyId: '#clientesBody' },
+            'almacen': { key: 'almacenData', tableBodyId: '#almacenBody' },
+            'trabajadores': { key: 'trabajadoresData', tableBodyId: '#trabajadoresBody' },
+            'caja': { key: 'cajaData', tableBodyId: '#cajaBody' }
+        };
+    
+        const sectionId = activeSection.id;
+        const { key: activeTable, tableBodyId } = sectionMap[sectionId] || {};
+    
+        if (!activeTable || !tableBodyId) {
+            console.error(`❌ No se encontró configuración para la sección: ${sectionId}`);
+            return;
+        }
+    
+        const newData = { nombre: input1, telefono: input2 }; // Ajusta según la tabla
+    
+        // Agregar datos a la tabla
+        addDataToTable(activeTable, tableBodyId, newData);
+    
+        // Renderizar la tabla inmediatamente después de agregar los datos
+        renderTable(activeTable, tableBodyId);
+    
+        // Cerrar el modal después de agregar
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addDataModal'));
+        modal.hide();
+    
+        // Limpiar los campos del modal
+        document.getElementById('modalForm').reset();
+    });
+
+
     // Función para guardar datos en localStorage
     function saveDataToLocalStorage(key, data) {
         try {
@@ -98,7 +175,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentData = loadDataFromLocalStorage(key);
         currentData.push(data);
         saveDataToLocalStorage(key, currentData);
+    
+        // Renderizar la tabla después de guardar los datos
         renderTable(key, tableBodyId);
+        console.log(`✅ Datos agregados y tabla renderizada para: ${key}`);
     }
 
     // Función para eliminar una fila
@@ -206,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
             toggleButton.textContent = '☰'; // Cambia el texto del botón
         }
     });
+    
 
 
     // Configuración inicial

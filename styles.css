@@ -158,6 +158,11 @@ body, button, input {
     pointer-events: none;
 }
 
+.table-options {
+    width: 11%; /* Ajusta el ancho según sea necesario */
+    white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
+}
+
 .crud__table {
     width: 100%;
     border-collapse: collapse;
