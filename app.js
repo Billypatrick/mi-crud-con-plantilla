@@ -133,38 +133,31 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = loadDataFromLocalStorage(key);
         const item = data[index];
     
-        // Mostrar un formulario emergente para editar los datos
-        const newValue1 = prompt("Editar primer campo:", item.nombre || item.producto || item.concepto);
-        const newValue2 = prompt("Editar segundo campo:", item.telefono || item.cantidad || item.monto || item.cargo);
+        // Mapeo de etiquetas dinámicas
+        const labelMap = {
+            'clientesData': { label1: 'Nombre y Apellidos', label2: 'Teléfono' },
+            'almacenData': { label1: 'Producto', label2: 'Cantidad' },
+            'trabajadoresData': { label1: 'Nombre y Apellidos', label2: 'Cargo' },
+            'cajaData': { label1: 'Concepto', label2: 'Monto' }
+        };
     
-        if (newValue1 !== null && newValue2 !== null) {
-            // Actualizar los valores en el objeto
-            if (item.nombre !== undefined) {
-                item.nombre = newValue1;
-                item.telefono = newValue2;
-            } else if (item.producto !== undefined) {
-                item.producto = newValue1;
-                item.cantidad = newValue2;
-            } else if (item.concepto !== undefined) {
-                item.concepto = newValue1;
-                item.monto = newValue2;
-            } else if (item.cargo !== undefined) {
-                item.nombre = newValue1;
-                item.cargo = newValue2;
-            }
+        // Obtener las etiquetas correspondientes
+        const { label1, label2 } = labelMap[key] || { label1: 'Campo 1', label2: 'Campo 2' };
     
-            // Guardar los datos actualizados en localStorage
-            saveDataToLocalStorage(key, data);
+        // Actualizar las etiquetas del modal
+        document.querySelector('label[for="editInput1"]').textContent = label1;
+        document.querySelector('label[for="editInput2"]').textContent = label2;
     
-            // Volver a renderizar la tabla
-            renderTable(key, tableBodyId);
+        // Rellenar los campos del modal con los datos existentes
+        document.getElementById('editInput1').value = item.nombre || item.producto || item.concepto || '';
+        document.getElementById('editInput2').value = item.telefono || item.cantidad || item.monto || item.cargo || '';
+        document.getElementById('editRowIndex').value = index;
+        document.getElementById('editTableKey').value = key;
     
-            console.log(`✅ Fila ${index} actualizada en: ${key}`, item);
-        } else {
-            console.log("⚠️ Edición cancelada");
-        }
+        // Mostrar el modal
+        const editModal = new bootstrap.Modal(document.getElementById('editDataModal'));
+        editModal.show();
     };
-
     // Función para agregar datos a la tabla y localStorage
     function addDataToTable(key, tableBodyId, data) {
         console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
@@ -285,6 +278,58 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             toggleButton.textContent = '☰'; // Cambia el texto del botón
         }
+    });
+
+
+    document.getElementById('saveEditData').addEventListener('click', function () {
+        const key = document.getElementById('editTableKey').value;
+        const index = parseInt(document.getElementById('editRowIndex').value, 10);
+        const input1 = document.getElementById('editInput1').value.trim();
+        const input2 = document.getElementById('editInput2').value.trim();
+    
+        if (!input1 || !input2) {
+            alert("⚠️ Ambos campos son obligatorios.");
+            return;
+        }
+    
+        const data = loadDataFromLocalStorage(key);
+        const item = data[index];
+    
+        // Actualizar los valores en el objeto
+        if (item.nombre !== undefined) {
+            item.nombre = input1;
+            item.telefono = input2;
+        } else if (item.producto !== undefined) {
+            item.producto = input1;
+            item.cantidad = input2;
+        } else if (item.concepto !== undefined) {
+            item.concepto = input1;
+            item.monto = input2;
+        } else if (item.cargo !== undefined) {
+            item.nombre = input1;
+            item.cargo = input2;
+        }
+    
+        // Guardar los datos actualizados en localStorage
+        saveDataToLocalStorage(key, data);
+    
+        // Obtener el tableBodyId correspondiente al key
+        const sectionMap = {
+            'clientesData': '#clientesBody',
+            'almacenData': '#almacenBody',
+            'trabajadoresData': '#trabajadoresBody',
+            'cajaData': '#cajaBody'
+        };
+        const tableBodyId = sectionMap[key];
+    
+        // Volver a renderizar la tabla
+        renderTable(key, tableBodyId);
+    
+        // Cerrar el modal
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editDataModal'));
+        editModal.hide();
+    
+        console.log(`✅ Fila ${index} actualizada en: ${key}`, item);
     });
     
 
