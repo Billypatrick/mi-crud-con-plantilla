@@ -3,49 +3,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('saveModalData').addEventListener('click', function () {
-        const input1 = document.getElementById('modalInput1').value.trim();
-        const input2 = document.getElementById('modalInput2').value.trim();
+        const inputDNI = document.getElementById('modalInputDNI')?.value.trim();
+        const inputNombre = document.getElementById('modalInput1').value.trim();
+        const inputTelefono = document.getElementById('modalInput2').value.trim();
     
-        if (!input1 || !input2) {
-            alert("⚠️ Ambos campos son obligatorios.");
-            return;
-        }
-
-        // Mapeo de etiquetas dinámicas para cada tabla
-    const labelMap = {
-        'clientes': { label1: 'Nombre y Apellidos', label2: 'Teléfono' },
-        'almacen': { label1: 'Producto', label2: 'Cantidad' },
-        'trabajadores': { label1: 'Nombre y Apellidos', label2: 'Cargo' },
-        'caja': { label1: 'Concepto', label2: 'Monto' }
-    };
-
-    // Actualizar las etiquetas del modal dinámicamente
-    document.querySelectorAll('[data-bs-target="#addDataModal"]').forEach(button => {
-        button.addEventListener('click', function () {
-            // Detectar la sección activa usando el atributo data-section del botón
-            const activeSection = this.closest('.content-section').id;
-
-            // Obtener las etiquetas correspondientes
-            const { label1, label2 } = labelMap[activeSection] || {};
-
-            // Actualizar las etiquetas del modal
-            document.querySelector('label[for="modalInput1"]').textContent = label1 || 'Campo 1';
-            document.querySelector('label[for="modalInput2"]').textContent = label2 || 'Campo 2';
-
-            // Limpiar los campos del modal
-            document.getElementById('modalInput1').value = '';
-            document.getElementById('modalInput2').value = '';
-        });
-    });
-    
-        // Detectar la sección activa dinámicamente
         const activeSection = document.querySelector('.content-section:not(.d-none)');
         if (!activeSection) {
             console.error("❌ No se pudo determinar la sección activa.");
             return;
         }
     
-        // Mapear las secciones a las claves de almacenamiento y cuerpos de tabla
         const sectionMap = {
             'clientes': { key: 'clientesData', tableBodyId: '#clientesBody' },
             'almacen': { key: 'almacenData', tableBodyId: '#almacenBody' },
@@ -61,13 +28,18 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
     
-        const newData = { nombre: input1, telefono: input2 }; // Ajusta según la tabla
+        let newData;
+        if (activeTable === 'clientesData') {
+            if (!inputDNI || !inputNombre || !inputTelefono) {
+                alert("⚠️ Todos los campos son obligatorios para Clientes.");
+                return;
+            }
+            newData = { dni: inputDNI, nombre: inputNombre, telefono: inputTelefono };
+        } else {
+            newData = { nombre: inputNombre, telefono: inputTelefono }; // Ajusta según la tabla
+        }
     
-        // Agregar datos a la tabla
         addDataToTable(activeTable, tableBodyId, newData);
-    
-        // Renderizar la tabla inmediatamente después de agregar los datos
-        renderTable(activeTable, tableBodyId);
     
         // Cerrar el modal después de agregar
         const modal = bootstrap.Modal.getInstance(document.getElementById('addDataModal'));
@@ -76,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Limpiar los campos del modal
         document.getElementById('modalForm').reset();
     });
-
 
     // Función para guardar datos en localStorage
     function saveDataToLocalStorage(key, data) {
@@ -113,14 +84,35 @@ document.addEventListener('DOMContentLoaded', function () {
     
         data.forEach((item, index) => {
             const newRow = document.createElement('tr');
-            let rowContent = `
-                <td>${item.nombre || item.producto || item.concepto}</td>
-                <td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
-                </td>
-            `;
+            let rowContent;
+    
+            if (key === 'clientesData') {
+                // Renderizar tabla de Clientes con las nuevas columnas
+                rowContent = `
+                    <td>${index + 1}</td> <!-- ID dinámico -->
+                    <td>${item.dni || ''}</td> <!-- DNI -->
+                    <td>${item.nombre || ''}</td> <!-- Nombre y Apellidos -->
+                    <td>${item.telefono || ''}</td> <!-- Teléfono -->
+                    <td>${item.ruc || ''}</td> <!-- RUC -->
+                    <td>${item.direccion || ''}</td> <!-- Dirección -->
+                    <td>${item.referencia || ''}</td> <!-- Referencia -->
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                    </td>
+                `;
+            } else {
+                // Renderizar otras tablas sin cambios
+                rowContent = `
+                    <td>${item.nombre || item.producto || item.concepto}</td>
+                    <td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                    </td>
+                `;
+            }
+    
             newRow.innerHTML = rowContent;
             tableBody.appendChild(newRow);
         });
@@ -161,10 +153,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Función para agregar datos a la tabla y localStorage
     function addDataToTable(key, tableBodyId, data) {
         console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
-        if (!data.nombre?.trim() && !data.producto?.trim() && !data.concepto?.trim()) {
-            console.warn("⚠️ No se pueden agregar datos vacíos");
-            return;
+    
+        if (key === 'clientesData') {
+            if (!data.dni?.trim() || !data.nombre?.trim() || !data.telefono?.trim() || !data.ruc?.trim() || !data.direccion?.trim() || !data.referencia?.trim()) {
+                console.warn("⚠️ Todos los campos son obligatorios para Clientes.");
+                return;
+            }
         }
+    
         const currentData = loadDataFromLocalStorage(key);
         currentData.push(data);
         saveDataToLocalStorage(key, currentData);
@@ -333,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     
 
+    
 
     // Configuración inicial
     setupForm('formClientes', '#clientesBody', 'clientesData');

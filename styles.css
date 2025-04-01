@@ -185,3 +185,21 @@ body, button, input {
 .hidden {
     display: none;
 }
+
+/* Ajustar el contenido principal cuando la barra lateral está visible */
+main {
+    margin-left: 250px; /* Ajusta este valor según el ancho de tu sidebar */
+    transition: margin-left 0.3s ease;
+}
+
+/* Cuando la barra lateral está oculta, el contenido se expande */
+.sidebar-hidden main {
+    margin-left: 0;
+    width: 100%;
+}
+
+table th:first-child, table td:first-child {
+    width: 50px; /* Ajusta el ancho según lo que necesites */
+    text-align: center; /* Centra el contenido */
+    white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
+}

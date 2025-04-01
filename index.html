@@ -45,12 +45,28 @@
             <div class="modal-body">
                 <form id="modalForm">
                     <div class="mb-3">
+                        <label for="modalInputDNI" class="form-label">DNI</label>
+                        <input type="text" class="form-control" id="modalInputDNI" required>
+                    </div>
+                    <div class="mb-3">
                         <label for="modalInput1" class="form-label">Nombre y Apellidos</label>
                         <input type="text" class="form-control" id="modalInput1" required>
                     </div>
                     <div class="mb-3">
                         <label for="modalInput2" class="form-label">Telefono</label>
                         <input type="text" class="form-control" id="modalInput2" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalInputRUC" class="form-label">RUC</label>
+                        <input type="text" class="form-control" id="modalInputRUC" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalInputDireccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="modalInputDireccion" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalInputReferencia" class="form-label">Referencia</label>
+                        <input type="text" class="form-control" id="modalInputReferencia" required>
                     </div>
                 </form>
             </div>
@@ -75,12 +91,26 @@
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Nombre y Apellidos</th><th>Teléfono</th><th class="table-options">Opciones</th></tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>DNI</th>
+                                <th>Nombre y Apellidos</th>
+                                <th>Teléfono</th>
+                                <th>RUC</th>
+                                <th>Dirección</th>
+                                <th>Referencia</th>
+                                <th class="table-options">Opciones</th>
+                            </tr>
                         </thead>
                         <tbody id="clientesBody">
                             <tr>
-                                <td>Ejemplo Cliente</td>
-                                <td>123456789</td>
+                                <td>1</td> <!-- ID -->
+                                <td>12345678</td> <!-- DNI -->
+                                <td>Ejemplo Cliente</td> <!-- Nombre y Apellidos -->
+                                <td>123456789</td> <!-- Teléfono -->
+                                <td>20123456789</td> <!-- RUC -->
+                                <td>Calle Falsa 123</td> <!-- Dirección -->
+                                <td>Frente al parque</td> <!-- Referencia -->
                                 <td>
                                     <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Aquí está corregido -->
                                 </td>
@@ -97,7 +127,11 @@
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Producto</th><th>Cantidad</th><th class="table-options">Opciones</th></tr>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th class="table-options">Opciones</th>
+                            </tr>
                         </thead>
                         <tbody id="almacenBody">
                             <tr>
@@ -119,7 +153,11 @@
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Nombre y Apellidos</th><th>Cargo</th><th class="table-options">Opciones</th></tr>
+                            <tr>
+                                <th>Nombre y Apellidos</th>
+                                <th>Cargo</th>
+                                <th class="table-options">Opciones</th>
+                            </tr>
                         </thead>
                         <tbody id="trabajadoresBody">
                             <tr>
@@ -141,7 +179,11 @@
                     </form>
                     <table class="table table-bordered mt-4">
                         <thead>
-                            <tr><th>Concepto</th><th>Monto</th><th class="table-options">Opciones</th></tr>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th class="table-options">Opciones</th>
+                            </tr>
                         </thead>
                         <tbody id="cajaBody">
                             <tr>
