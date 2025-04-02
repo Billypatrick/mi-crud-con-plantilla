@@ -3,9 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('saveModalData').addEventListener('click', function () {
+        const input1 = document.getElementById('modalInput1')?.value.trim();
+        const input2 = document.getElementById('modalInput2')?.value.trim();
         const inputDNI = document.getElementById('modalInputDNI')?.value.trim();
-        const inputNombre = document.getElementById('modalInput1').value.trim();
-        const inputTelefono = document.getElementById('modalInput2').value.trim();
+        const inputRUC = document.getElementById('modalInputRUC')?.value.trim();
+        const inputDireccion = document.getElementById('modalInputDireccion')?.value.trim();
+        const inputReferencia = document.getElementById('modalInputReferencia')?.value.trim();
     
         const activeSection = document.querySelector('.content-section:not(.d-none)');
         if (!activeSection) {
@@ -30,13 +33,29 @@ document.addEventListener('DOMContentLoaded', function () {
     
         let newData;
         if (activeTable === 'clientesData') {
-            if (!inputDNI || !inputNombre || !inputTelefono) {
+            if (!inputDNI || !input1 || !input2 || !inputRUC || !inputDireccion || !inputReferencia) {
                 alert("⚠️ Todos los campos son obligatorios para Clientes.");
                 return;
             }
-            newData = { dni: inputDNI, nombre: inputNombre, telefono: inputTelefono };
-        } else {
-            newData = { nombre: inputNombre, telefono: inputTelefono }; // Ajusta según la tabla
+            newData = { dni: inputDNI, nombre: input1, telefono: input2, ruc: inputRUC, direccion: inputDireccion, referencia: inputReferencia };
+        } else if (activeTable === 'almacenData') {
+            if (!input1 || !input2) {
+                alert("⚠️ Todos los campos son obligatorios para Almacén.");
+                return;
+            }
+            newData = { producto: input1, cantidad: input2 };
+        } else if (activeTable === 'trabajadoresData') {
+            if (!input1 || !input2) {
+                alert("⚠️ Todos los campos son obligatorios para Trabajadores.");
+                return;
+            }
+            newData = { nombre: input1, cargo: input2 };
+        } else if (activeTable === 'cajaData') {
+            if (!input1 || !input2) {
+                alert("⚠️ Todos los campos son obligatorios para Caja.");
+                return;
+            }
+            newData = { concepto: input1, monto: input2 };
         }
     
         addDataToTable(activeTable, tableBodyId, newData);
@@ -87,25 +106,41 @@ document.addEventListener('DOMContentLoaded', function () {
             let rowContent;
     
             if (key === 'clientesData') {
-                // Renderizar tabla de Clientes con las nuevas columnas
                 rowContent = `
-                    <td>${index + 1}</td> <!-- ID dinámico -->
-                    <td>${item.dni || ''}</td> <!-- DNI -->
-                    <td>${item.nombre || ''}</td> <!-- Nombre y Apellidos -->
-                    <td>${item.telefono || ''}</td> <!-- Teléfono -->
-                    <td>${item.ruc || ''}</td> <!-- RUC -->
-                    <td>${item.direccion || ''}</td> <!-- Dirección -->
-                    <td>${item.referencia || ''}</td> <!-- Referencia -->
+                    <td>${index + 1}</td>
+                    <td>${item.dni || ''}</td>
+                    <td>${item.nombre || ''}</td>
+                    <td>${item.telefono || ''}</td>
+                    <td>${item.ruc || ''}</td>
+                    <td>${item.direccion || ''}</td>
+                    <td>${item.referencia || ''}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
                     </td>
                 `;
-            } else {
-                // Renderizar otras tablas sin cambios
+            } else if (key === 'almacenData') {
                 rowContent = `
-                    <td>${item.nombre || item.producto || item.concepto}</td>
-                    <td>${item.telefono || item.cantidad || item.monto || item.cargo}</td>
+                    <td>${item.producto || ''}</td>
+                    <td>${item.cantidad || ''}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                    </td>
+                `;
+            } else if (key === 'trabajadoresData') {
+                rowContent = `
+                    <td>${item.nombre || ''}</td>
+                    <td>${item.cargo || ''}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                    </td>
+                `;
+            } else if (key === 'cajaData') {
+                rowContent = `
+                    <td>${item.concepto || ''}</td>
+                    <td>${item.monto || ''}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
@@ -125,32 +160,69 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = loadDataFromLocalStorage(key);
         const item = data[index];
     
-        // Mapeo de etiquetas dinámicas
-        const labelMap = {
-            'clientesData': { label1: 'Nombre y Apellidos', label2: 'Teléfono' },
-            'almacenData': { label1: 'Producto', label2: 'Cantidad' },
-            'trabajadoresData': { label1: 'Nombre y Apellidos', label2: 'Cargo' },
-            'cajaData': { label1: 'Concepto', label2: 'Monto' }
+        const modalFieldMap = {
+            'clientesData': [
+                { id: 'editInputDNI', label: 'DNI', value: item.dni || '' },
+                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '' },
+                { id: 'editInputTelefono', label: 'Teléfono', value: item.telefono || '' },
+                { id: 'editInputRUC', label: 'RUC', value: item.ruc || '' },
+                { id: 'editInputDireccion', label: 'Dirección', value: item.direccion || '' },
+                { id: 'editInputReferencia', label: 'Referencia', value: item.referencia || '' }
+            ],
+            'almacenData': [
+                { id: 'editInputProducto', label: 'Producto', value: item.producto || '' },
+                { id: 'editInputCantidad', label: 'Cantidad', value: item.cantidad || '' }
+            ],
+            'trabajadoresData': [
+                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '' },
+                { id: 'editInputCargo', label: 'Cargo', value: item.cargo || '' }
+            ],
+            'cajaData': [
+                { id: 'editInputConcepto', label: 'Concepto', value: item.concepto || '' },
+                { id: 'editInputMonto', label: 'Monto', value: item.monto || '' }
+            ]
         };
     
-        // Obtener las etiquetas correspondientes
-        const { label1, label2 } = labelMap[key] || { label1: 'Campo 1', label2: 'Campo 2' };
+        const fields = modalFieldMap[key];
+        if (!fields) {
+            console.error(`❌ No se encontraron campos para la tabla: ${key}`);
+            return;
+        }
     
-        // Actualizar las etiquetas del modal
-        document.querySelector('label[for="editInput1"]').textContent = label1;
-        document.querySelector('label[for="editInput2"]').textContent = label2;
+        const editModalForm = document.getElementById('editDataForm');
+        if (!editModalForm) {
+            console.error("❌ No se encontró el formulario del modal de edición.");
+            return;
+        }
+        editModalForm.innerHTML = '';
     
-        // Rellenar los campos del modal con los datos existentes
-        document.getElementById('editInput1').value = item.nombre || item.producto || item.concepto || '';
-        document.getElementById('editInput2').value = item.telefono || item.cantidad || item.monto || item.cargo || '';
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'mb-3';
+    
+            const label = document.createElement('label');
+            label.setAttribute('for', field.id);
+            label.className = 'form-label';
+            label.textContent = field.label;
+    
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control';
+            input.id = field.id;
+            input.value = field.value;
+    
+            fieldDiv.appendChild(label);
+            fieldDiv.appendChild(input);
+            editModalForm.appendChild(fieldDiv);
+        });
+    
         document.getElementById('editRowIndex').value = index;
         document.getElementById('editTableKey').value = key;
     
-        // Mostrar el modal
         const editModal = new bootstrap.Modal(document.getElementById('editDataModal'));
         editModal.show();
     };
-    // Función para agregar datos a la tabla y localStorage
+    
     function addDataToTable(key, tableBodyId, data) {
         console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
     
@@ -165,12 +237,10 @@ document.addEventListener('DOMContentLoaded', function () {
         currentData.push(data);
         saveDataToLocalStorage(key, currentData);
     
-        // Renderizar la tabla después de guardar los datos
         renderTable(key, tableBodyId);
         console.log(`✅ Datos agregados y tabla renderizada para: ${key}`);
     }
 
-    // Función para eliminar una fila
     window.deleteRow = function (key, index, tableBodyId) {
         console.log(`🗑️ Intentando eliminar fila ${index} de: ${key}`);
     
@@ -185,7 +255,6 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelButtonText: "Cancelar"
         }).then((result) => {
             if (result.isConfirmed) {
-                // Si el usuario confirma, eliminar la fila
                 const data = loadDataFromLocalStorage(key);
                 data.splice(index, 1);
                 saveDataToLocalStorage(key, data);
@@ -197,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     
 
-    // Configuración de formularios
     function setupForm(formId, tableBodyId, storageKey) {
         const form = document.getElementById(formId);
         if (!form) {
@@ -227,11 +295,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 addDataToTable(storageKey, tableBodyId, { concepto, monto });
             }
 
-            this.reset(); // Limpia el formulario después de agregar
+            this.reset();
         });
     }
 
-    // Función para navegar entre secciones
     window.navigateTo = function (sectionId) {
         console.log(`🔄 Navegando a la sección: ${sectionId}`);
         const sections = document.querySelectorAll('.content-section');
@@ -243,13 +310,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     
-        // Cambiar el título de la sección
         const sectionTitle = document.getElementById('sectionTitle');
         if (sectionTitle) {
             sectionTitle.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
         }
     
-        // Resaltar el botón activo
         const buttons = document.querySelectorAll('.sidebar button');
         buttons.forEach(button => button.classList.remove('btn-active'));
         document.querySelector(`button[onclick="navigateTo('${sectionId}')"]`).classList.add('btn-active');
@@ -268,11 +333,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     toggleButton.addEventListener('click', function () {
         console.log("✅ Botón clickeado");
-        container.classList.toggle('sidebar-hidden'); // Alterna la clase
+        container.classList.toggle('sidebar-hidden');
         if (container.classList.contains('sidebar-hidden')) {
-            toggleButton.textContent = '☰'; // Cambia el texto del botón
+            toggleButton.textContent = '☰';
         } else {
-            toggleButton.textContent = '☰'; // Cambia el texto del botón
+            toggleButton.textContent = '☰';
         }
     });
 
@@ -280,64 +345,131 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saveEditData').addEventListener('click', function () {
         const key = document.getElementById('editTableKey').value;
         const index = parseInt(document.getElementById('editRowIndex').value, 10);
-        const input1 = document.getElementById('editInput1').value.trim();
-        const input2 = document.getElementById('editInput2').value.trim();
     
-        if (!input1 || !input2) {
-            alert("⚠️ Ambos campos son obligatorios.");
+        const modalFieldMap = {
+            'clientesData': ['editInputDNI', 'editInputNombre', 'editInputTelefono', 'editInputRUC', 'editInputDireccion', 'editInputReferencia'],
+            'almacenData': ['editInputProducto', 'editInputCantidad'],
+            'trabajadoresData': ['editInputNombre', 'editInputCargo'],
+            'cajaData': ['editInputConcepto', 'editInputMonto']
+        };
+    
+        const fields = modalFieldMap[key];
+        if (!fields) {
+            console.error(`❌ No se encontraron campos para la tabla: ${key}`);
+            return;
+        }
+    
+        const updatedData = {};
+        fields.forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                const fieldName = fieldId.replace('editInput', '').toLowerCase();
+                updatedData[fieldName] = input.value.trim();
+            }
+        });
+    
+        const isValid = fields.every(fieldId => {
+            const input = document.getElementById(fieldId);
+            return input && input.value.trim() !== '';
+        });
+        if (!isValid) {
+            alert("⚠️ Todos los campos son obligatorios.");
             return;
         }
     
         const data = loadDataFromLocalStorage(key);
-        const item = data[index];
-    
-        // Actualizar los valores en el objeto
-        if (item.nombre !== undefined) {
-            item.nombre = input1;
-            item.telefono = input2;
-        } else if (item.producto !== undefined) {
-            item.producto = input1;
-            item.cantidad = input2;
-        } else if (item.concepto !== undefined) {
-            item.concepto = input1;
-            item.monto = input2;
-        } else if (item.cargo !== undefined) {
-            item.nombre = input1;
-            item.cargo = input2;
-        }
-    
-        // Guardar los datos actualizados en localStorage
+        Object.assign(data[index], updatedData);
         saveDataToLocalStorage(key, data);
     
-        // Obtener el tableBodyId correspondiente al key
-        const sectionMap = {
-            'clientesData': '#clientesBody',
-            'almacenData': '#almacenBody',
-            'trabajadoresData': '#trabajadoresBody',
-            'cajaData': '#cajaBody'
-        };
-        const tableBodyId = sectionMap[key];
-    
-        // Volver a renderizar la tabla
+        const tableBodyId = `#${key.replace('Data', 'Body')}`;
         renderTable(key, tableBodyId);
     
-        // Cerrar el modal
         const editModal = bootstrap.Modal.getInstance(document.getElementById('editDataModal'));
         editModal.hide();
     
-        console.log(`✅ Fila ${index} actualizada en: ${key}`, item);
+        console.log(`✅ Fila ${index} actualizada en: ${key}`, data[index]);
     });
     
+    function updateModalFields(sectionId) {
+        const modalForm = document.getElementById('modalForm');
+        if (!modalForm) {
+            console.error("❌ No se encontró el formulario del modal.");
+            return;
+        }
+    
+        modalForm.innerHTML = '';
+    
+        const fields = modalFieldMap[sectionId];
+        if (!fields) {
+            console.error(`❌ No se encontraron campos para la sección: ${sectionId}`);
+            return;
+        }
+    
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'mb-3';
+    
+            const label = document.createElement('label');
+            label.setAttribute('for', field.id);
+            label.className = 'form-label';
+            label.textContent = field.label;
+    
+            const input = document.createElement('input');
+            input.type = field.type;
+            input.className = 'form-control';
+            input.id = field.id;
+            if (field.required) {
+                input.required = true;
+            }
+    
+            fieldDiv.appendChild(label);
+            fieldDiv.appendChild(input);
+            modalForm.appendChild(fieldDiv);
+        });
+    }
 
+    document.querySelectorAll('[data-bs-target="#addDataModal"]').forEach(button => {
+        button.addEventListener('click', function () {
+            const activeSection = document.querySelector('.content-section:not(.d-none)');
+            if (!activeSection) {
+                console.error("❌ No se pudo determinar la sección activa.");
+                return;
+            }
+    
+            const sectionId = activeSection.id;
+            updateModalFields(sectionId);
+        });
+    });
+
+    const modalFieldMap = {
+        'clientes': [
+            { id: 'modalInputDNI', label: 'DNI', type: 'text', required: true },
+            { id: 'modalInput1', label: 'Nombre y Apellidos', type: 'text', required: true },
+            { id: 'modalInput2', label: 'Teléfono', type: 'text', required: true },
+            { id: 'modalInputRUC', label: 'RUC', type: 'text', required: true },
+            { id: 'modalInputDireccion', label: 'Dirección', type: 'text', required: true },
+            { id: 'modalInputReferencia', label: 'Referencia', type: 'text', required: true }
+        ],
+        'almacen': [
+            { id: 'modalInput1', label: 'Producto', type: 'text', required: true },
+            { id: 'modalInput2', label: 'Cantidad', type: 'number', required: true }
+        ],
+        'trabajadores': [
+            { id: 'modalInput1', label: 'Nombre y Apellidos', type: 'text', required: true },
+            { id: 'modalInput2', label: 'Cargo', type: 'text', required: true }
+        ],
+        'caja': [
+            { id: 'modalInput1', label: 'Concepto', type: 'text', required: true },
+            { id: 'modalInput2', label: 'Monto', type: 'number', required: true }
+        ]
+    };
     
 
-    // Configuración inicial
     setupForm('formClientes', '#clientesBody', 'clientesData');
     setupForm('formAlmacen', '#almacenBody', 'almacenData');
     setupForm('formTrabajadores', '#trabajadoresBody', 'trabajadoresData');
     setupForm('formCaja', '#cajaBody', 'cajaData');
 
-    // Renderizar tablas al cargar la página
     renderTable('clientesData', '#clientesBody');
     renderTable('almacenData', '#almacenBody');
     renderTable('trabajadoresData', '#trabajadoresBody');

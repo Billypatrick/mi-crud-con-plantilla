@@ -16,6 +16,42 @@ body, button, input {
     padding: 20px;
 }
 
+/* Ajustar el espaciado entre filas del modal */
+#addDataModal .row {
+    margin-bottom: 15px; /* Espaciado entre filas */
+}
+
+#addDataModal .col-md-6 {
+    padding: 0 10px; /* Espaciado interno entre columnas */
+}
+
+#addDataModal .modal-body form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas iguales */
+    gap: 15px; /* Espaciado entre los campos */
+}
+
+#addDataModal .modal-body form .row {
+    margin: 0; /* Eliminar márgenes de las filas */
+}
+
+#addDataModal .modal-body form .col-md-6 {
+    padding: 0; /* Eliminar padding de las columnas */
+    grid-column: span 1; /* Cada campo ocupa una columna */
+}
+
+/* Ajustar el diseño del formulario del modal de edición */
+#editDataModal .modal-body form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas iguales */
+    gap: 15px; /* Espaciado entre los campos */
+}
+
+#editDataModal .modal-body form .mb-3 {
+    margin: 0; /* Eliminar márgenes de los campos */
+    grid-column: span 1; /* Cada campo ocupa una columna */
+}
+
 .crud__title {
     text-align: center;
 }
@@ -203,3 +239,4 @@ table th:first-child, table td:first-child {
     text-align: center; /* Centra el contenido */
     white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
 }
+
