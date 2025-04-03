@@ -10,8 +10,9 @@
 </head>
 <body>
     <div class="container-fluid">
-        <button id="toggleSidebar" class="btn btn-primary">☰</button> <!-- Botón para alternar -->
+        <button id="toggleSidebar" class="btn btn-primary">☰</button>
         <div class="row">
+            <!-- Sidebar -->
             <nav class="col-md-3 col-lg-2 d-md-block sidebar text-white vh-100">
                 <div class="position-sticky">
                     <h3 class="text-center py-3">
@@ -34,95 +35,13 @@
                 </div>
             </nav>
 
-            <!-- Modal para agregar datos -->
-            <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalTitle">Agregar Nuevo Registro</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="modalForm">
-                                <!-- Fila 1: DNI y Nombre y Apellidos -->
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="modalInputDNI" class="form-label">DNI</label>
-                                        <input type="text" class="form-control" id="modalInputDNI" maxlength="8" inputmode="numeric" required 
-                                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="modalInput1" class="form-label">Nombre y Apellidos</label>
-                                        <input type="text" class="form-control" id="modalInput1" required 
-                                               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
-                                    </div>
-                                </div>
-                                <!-- Fila 2: Teléfono y RUC -->
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="modalInput2" class="form-label">Teléfono</label>
-                                        <input type="text" class="form-control" id="modalInput2" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="modalInputRUC" class="form-label">RUC</label>
-                                        <input type="text" class="form-control" id="modalInputRUC" required>
-                                    </div>
-                                </div>
-                                <!-- Fila 3: Dirección y Referencia -->
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="modalInputDireccion" class="form-label">Dirección</label>
-                                        <input type="text" class="form-control" id="modalInputDireccion" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="modalInputReferencia" class="form-label">Referencia</label>
-                                        <input type="text" class="form-control" id="modalInputReferencia" required>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" id="saveModalData">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-<!-- Modal para editar datos -->
-<div class="modal fade" id="editDataModal" tabindex="-1" aria-labelledby="editDataModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editDataModalLabel">Editar Registro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editDataForm">
-                    <!-- Los campos dinámicos se generarán aquí -->
-                </form>
-                <!-- Campos ocultos para almacenar el índice y la clave de la tabla -->
-                <input type="hidden" id="editRowIndex">
-                <input type="hidden" id="editTableKey">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="saveEditData">Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
+            <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <h1 id="sectionTitle" class="my-4">CLIENTES</h1>
-                
+
                 <!-- Sección Clientes -->
                 <div id="clientes" class="content-section">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="clientes">
-                        Agregar
-                    </button>
-                    </form>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="clientes">Agregar</button>
                     <table class="table table-bordered mt-4">
                         <thead>
                             <tr>
@@ -138,15 +57,15 @@
                         </thead>
                         <tbody id="clientesBody">
                             <tr>
-                                <td>1</td> <!-- ID -->
-                                <td>12345678</td> <!-- DNI -->
-                                <td>Ejemplo Cliente</td> <!-- Nombre y Apellidos -->
-                                <td>123456789</td> <!-- Teléfono -->
-                                <td>20123456789</td> <!-- RUC -->
-                                <td>Calle Falsa 123</td> <!-- Dirección -->
-                                <td>Frente al parque</td> <!-- Referencia -->
+                                <td>1</td>
+                                <td>12345678</td>
+                                <td>Ejemplo Cliente</td>
+                                <td>123456789</td>
+                                <td>20123456789</td>
+                                <td>Calle Falsa 123</td>
+                                <td>Frente al parque</td>
                                 <td>
-                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Aquí está corregido -->
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -155,10 +74,7 @@
 
                 <!-- Sección Almacén -->
                 <div id="almacen" class="content-section d-none">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="almacen">
-                        Agregar
-                    </button>
-                    </form>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="almacen">Agregar</button>
                     <table class="table table-bordered mt-4">
                         <thead>
                             <tr>
@@ -172,7 +88,7 @@
                                 <td>Ejemplo Producto</td>
                                 <td>10</td>
                                 <td>
-                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Aquí también -->
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -181,10 +97,7 @@
 
                 <!-- Sección Trabajadores -->
                 <div id="trabajadores" class="content-section d-none">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="trabajadores">
-                        Agregar
-                    </button>
-                    </form>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="trabajadores">Agregar</button>
                     <table class="table table-bordered mt-4">
                         <thead>
                             <tr>
@@ -198,7 +111,7 @@
                                 <td>Ejemplo Trabajador</td>
                                 <td>Gerente</td>
                                 <td>
-                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 Y aquí -->
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -207,10 +120,7 @@
 
                 <!-- Sección Caja -->
                 <div id="caja" class="content-section d-none">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="caja">
-                        Agregar
-                    </button>
-                    </form>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="caja">Agregar</button>
                     <table class="table table-bordered mt-4">
                         <thead>
                             <tr>
@@ -224,7 +134,7 @@
                                 <td>Pago de Luz</td>
                                 <td>500</td>
                                 <td>
-                                    <button class="btn btn-danger btn-eliminar">Eliminar</button> <!-- 🔴 También aquí -->
+                                    <button class="btn btn-danger btn-eliminar">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -234,27 +144,71 @@
         </div>
     </div>
 
+    <!-- Modal para agregar datos -->
+    <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Agregar Nuevo Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="modalForm">
+                        <!-- Fila 1 -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="modalInputDNI" class="form-label">DNI</label>
+                                <input type="text" class="form-control" id="modalInputDNI" maxlength="8" inputmode="numeric" required oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modalInput1" class="form-label">Nombre y Apellidos</label>
+                                <input type="text" class="form-control" id="modalInput1" required oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
+                            </div>
+                        </div>
+                        <!-- Fila 2 -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="modalInput2" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="modalInput2" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modalInputRUC" class="form-label">RUC</label>
+                                <input type="text" class="form-control" id="modalInputRUC" required>
+                            </div>
+                        </div>
+                        <!-- Fila 3 -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="modalInputDireccion" class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="modalInputDireccion" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="modalInputReferencia" class="form-label">Referencia</label>
+                                <input type="text" class="form-control" id="modalInputReferencia" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveModalData">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para editar datos -->
     <div class="modal fade" id="editDataModal" tabindex="-1" aria-labelledby="editDataModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editDataModalLabel">Editar Datos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="editDataModalLabel">Editar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editDataForm">
-                        <div class="mb-3">
-                            <label for="editInput1" class="form-label">Campo 1</label>
-                            <input type="text" class="form-control" id="editInput1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editInput2" class="form-label">Campo 2</label>
-                            <input type="text" class="form-control" id="editInput2" required>
-                        </div>
-                        <input type="hidden" id="editRowIndex">
-                        <input type="hidden" id="editTableKey">
-                    </form>
+                    <form id="editDataForm"></form>
+                    <input type="hidden" id="editRowIndex">
+                    <input type="hidden" id="editTableKey">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

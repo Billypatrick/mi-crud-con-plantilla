@@ -234,9 +234,37 @@ main {
     width: 100%;
 }
 
-table th:first-child, table td:first-child {
-    width: 50px; /* Ajusta el ancho según lo que necesites */
-    text-align: center; /* Centra el contenido */
-    white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
+/* Alinear el texto de la columna Producto de la tabla ALMACEN a la izquierda */
+#almacenBody td:first-child, 
+#almacenBody th:first-child {
+    text-align: left;
+}
+
+/* Ajustar el ancho de la columna ID en la tabla de CLIENTES */
+#clientesBody td:first-child, 
+#clientesBody th:first-child {
+    width: 50px; /* Espacio suficiente para dos dígitos */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Teléfono en la tabla de CLIENTES */
+#clientesBody td:nth-child(4), 
+#clientesBody th:nth-child(4) {
+    width: 100px; /* Espacio suficiente para nueve dígitos */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna DNI en la tabla de CLIENTES */
+#clientesBody td:nth-child(2), 
+#clientesBody th:nth-child(2) {
+    width: 80px; /* Espacio suficiente para ocho dígitos */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna RUC en la tabla de CLIENTES */
+#clientesBody td:nth-child(5), 
+#clientesBody th:nth-child(5) {
+    width: 120px; /* Espacio suficiente para 11 dígitos */
+    text-align: center; /* Centrar el contenido */
 }
 
