@@ -3,62 +3,113 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('saveModalData').addEventListener('click', function () {
-        const input1 = document.getElementById('modalInput1')?.value.trim();
-        const input2 = document.getElementById('modalInput2')?.value.trim();
-        const inputDNI = document.getElementById('modalInputDNI')?.value.trim();
-        const inputRUC = document.getElementById('modalInputRUC')?.value.trim();
-        const inputDireccion = document.getElementById('modalInputDireccion')?.value.trim();
-        const inputReferencia = document.getElementById('modalInputReferencia')?.value.trim();
-    
+        // Obtener la sección activa
         const activeSection = document.querySelector('.content-section:not(.d-none)');
         if (!activeSection) {
             console.error("❌ No se pudo determinar la sección activa.");
             return;
         }
     
+        const sectionId = activeSection.id;
+    
+        // Configuración específica para cada tabla
         const sectionMap = {
-            'clientes': { key: 'clientesData', tableBodyId: '#clientesBody' },
-            'almacen': { key: 'almacenData', tableBodyId: '#almacenBody' },
-            'trabajadores': { key: 'trabajadoresData', tableBodyId: '#trabajadoresBody' },
-            'caja': { key: 'cajaData', tableBodyId: '#cajaBody' }
+            'clientes': {
+                key: 'clientesData',
+                tableBodyId: '#clientesBody',
+                validate: function () {
+                    const inputDNI = document.getElementById('modalInputDNI')?.value.trim();
+                    const inputNombre = document.getElementById('modalInput1')?.value.trim();
+                    const inputTelefono = document.getElementById('modalInput2')?.value.trim();
+                    const inputRUC = document.getElementById('modalInputRUC')?.value.trim();
+                    const inputDireccion = document.getElementById('modalInputDireccion')?.value.trim();
+                    const inputReferencia = document.getElementById('modalInputReferencia')?.value.trim();
+
+                    if (!inputDNI || !inputNombre || !inputTelefono || !inputDireccion || !inputReferencia) {
+                        alert("⚠️ Todos los campos obligatorios deben ser completados.");
+                        return false;
+                    }
+
+                    return {
+                        dni: inputDNI,
+                        nombre: inputNombre,
+                        telefono: inputTelefono,
+                        ruc: inputRUC, // Puede estar vacío
+                        direccion: inputDireccion,
+                        referencia: inputReferencia
+                    };
+                }
+            },
+            'almacen': {
+                key: 'almacenData',
+                tableBodyId: '#almacenBody',
+                validate: function () {
+                    const inputProducto = document.getElementById('modalInput1')?.value.trim();
+                    const inputCantidad = document.getElementById('modalInput2')?.value.trim();
+        
+                    if (!inputProducto || !inputCantidad) {
+                        alert("⚠️ Todos los campos son obligatorios.");
+                        return false;
+                    }
+        
+                    return {
+                        producto: inputProducto,
+                        cantidad: inputCantidad
+                    };
+                }
+            },
+            'trabajadores': {
+                key: 'trabajadoresData',
+                tableBodyId: '#trabajadoresBody',
+                validate: function () {
+                    const inputNombre = document.getElementById('modalInput1')?.value.trim();
+                    const inputCargo = document.getElementById('modalInput2')?.value.trim();
+        
+                    if (!inputNombre || !inputCargo) {
+                        alert("⚠️ Todos los campos son obligatorios.");
+                        return false;
+                    }
+        
+                    return {
+                        nombre: inputNombre,
+                        cargo: inputCargo
+                    };
+                }
+            },
+            'caja': {
+                key: 'cajaData',
+                tableBodyId: '#cajaBody',
+                validate: function () {
+                    const inputConcepto = document.getElementById('modalInput1')?.value.trim();
+                    const inputMonto = document.getElementById('modalInput2')?.value.trim();
+        
+                    if (!inputConcepto || !inputMonto) {
+                        alert("⚠️ Todos los campos son obligatorios.");
+                        return false;
+                    }
+        
+                    return {
+                        concepto: inputConcepto,
+                        monto: inputMonto
+                    };
+                }
+            }
         };
     
-        const sectionId = activeSection.id;
-        const { key: activeTable, tableBodyId } = sectionMap[sectionId] || {};
-    
-        if (!activeTable || !tableBodyId) {
+        const config = sectionMap[sectionId];
+        if (!config) {
             console.error(`❌ No se encontró configuración para la sección: ${sectionId}`);
             return;
         }
     
-        let newData;
-        if (activeTable === 'clientesData') {
-            if (!inputDNI || !input1 || !input2 || !inputRUC || !inputDireccion || !inputReferencia) {
-                alert("⚠️ Todos los campos son obligatorios para Clientes.");
-                return;
-            }
-            newData = { dni: inputDNI, nombre: input1, telefono: input2, ruc: inputRUC, direccion: inputDireccion, referencia: inputReferencia };
-        } else if (activeTable === 'almacenData') {
-            if (!input1 || !input2) {
-                alert("⚠️ Todos los campos son obligatorios para Almacén.");
-                return;
-            }
-            newData = { producto: input1, cantidad: input2 };
-        } else if (activeTable === 'trabajadoresData') {
-            if (!input1 || !input2) {
-                alert("⚠️ Todos los campos son obligatorios para Trabajadores.");
-                return;
-            }
-            newData = { nombre: input1, cargo: input2 };
-        } else if (activeTable === 'cajaData') {
-            if (!input1 || !input2) {
-                alert("⚠️ Todos los campos son obligatorios para Caja.");
-                return;
-            }
-            newData = { concepto: input1, monto: input2 };
+        // Validar los datos
+        const newData = config.validate();
+        if (!newData) {
+            return; // Si la validación falla, no continuar
         }
     
-        addDataToTable(activeTable, tableBodyId, newData);
+        // Guardar los datos en la tabla y en localStorage
+        addDataToTable(config.key, config.tableBodyId, newData);
     
         // Cerrar el modal después de agregar
         const modal = bootstrap.Modal.getInstance(document.getElementById('addDataModal'));
@@ -162,10 +213,30 @@ document.addEventListener('DOMContentLoaded', function () {
     
         const modalFieldMap = {
             'clientesData': [
-                { id: 'editInputDNI', label: 'DNI', value: item.dni || '' },
-                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '' },
-                { id: 'editInputTelefono', label: 'Teléfono', value: item.telefono || '' },
-                { id: 'editInputRUC', label: 'RUC', value: item.ruc || '' },
+                { 
+                    id: 'editInputDNI', 
+                    label: 'DNI', 
+                    value: item.dni || '', 
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)")
+                },
+                { 
+                    id: 'editInputNombre', 
+                    label: 'Nombre y Apellidos', 
+                    value: item.nombre || '', 
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '').slice(0, 30)")
+                },
+                { 
+                    id: 'editInputTelefono', 
+                    label: 'Teléfono', 
+                    value: item.telefono || '', 
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)")
+                },
+                { 
+                    id: 'editInputRUC', 
+                    label: 'RUC', 
+                    value: item.ruc || '', 
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)")
+                },
                 { id: 'editInputDireccion', label: 'Dirección', value: item.direccion || '' },
                 { id: 'editInputReferencia', label: 'Referencia', value: item.referencia || '' }
             ],
@@ -174,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 { id: 'editInputCantidad', label: 'Cantidad', value: item.cantidad || '' }
             ],
             'trabajadoresData': [
-                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '' },
+                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '', validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '')") },
                 { id: 'editInputCargo', label: 'Cargo', value: item.cargo || '' }
             ],
             'cajaData': [
@@ -211,6 +282,11 @@ document.addEventListener('DOMContentLoaded', function () {
             input.id = field.id;
             input.value = field.value;
     
+            // Aplicar validación si está definida
+            if (field.validation) {
+                field.validation(input);
+            }
+    
             fieldDiv.appendChild(label);
             fieldDiv.appendChild(input);
             editModalForm.appendChild(fieldDiv);
@@ -227,8 +303,10 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
     
         if (key === 'clientesData') {
-            if (!data.dni?.trim() || !data.nombre?.trim() || !data.telefono?.trim() || !data.ruc?.trim() || !data.direccion?.trim() || !data.referencia?.trim()) {
-                console.warn("⚠️ Todos los campos son obligatorios para Clientes.");
+            // Validar solo los campos obligatorios
+            if (!data.dni?.trim() || !data.nombre?.trim() || !data.telefono?.trim() || !data.direccion?.trim() || !data.referencia?.trim()) {
+                console.warn("⚠️ Todos los campos obligatorios deben ser completados para Clientes.");
+                alert("⚠️ Todos los campos obligatorios deben ser completados.");
                 return;
             }
         }
@@ -368,13 +446,26 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     
-        const isValid = fields.every(fieldId => {
-            const input = document.getElementById(fieldId);
-            return input && input.value.trim() !== '';
-        });
-        if (!isValid) {
-            alert("⚠️ Todos los campos son obligatorios.");
-            return;
+        // Validar restricciones específicas
+        if (key === 'clientesData') {
+            const dni = updatedData.dni;
+            const nombre = updatedData.nombre;
+    
+            if (!/^\d{8}$/.test(dni)) {
+                alert("⚠️ El DNI debe contener exactamente 8 dígitos numéricos.");
+                return;
+            }
+    
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+                alert("⚠️ El campo Nombre y Apellidos solo puede contener letras.");
+                return;
+            }
+    
+            // Validar solo los campos obligatorios (excluyendo RUC)
+            if (!updatedData.dni || !updatedData.nombre || !updatedData.telefono || !updatedData.direccion || !updatedData.referencia) {
+                alert("⚠️ Todos los campos obligatorios deben ser completados.");
+                return;
+            }
         }
     
         const data = loadDataFromLocalStorage(key);
@@ -422,6 +513,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 input.required = true;
             }
     
+            // Aplicar validación si está definida
+            if (field.validation) {
+                field.validation(input);
+            }
+    
             fieldDiv.appendChild(label);
             fieldDiv.appendChild(input);
             modalForm.appendChild(fieldDiv);
@@ -443,10 +539,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const modalFieldMap = {
         'clientes': [
-            { id: 'modalInputDNI', label: 'DNI', type: 'text', required: true },
-            { id: 'modalInput1', label: 'Nombre y Apellidos', type: 'text', required: true },
-            { id: 'modalInput2', label: 'Teléfono', type: 'text', required: true },
-            { id: 'modalInputRUC', label: 'RUC', type: 'text', required: true },
+            { 
+                id: 'modalInputDNI', 
+                label: 'DNI', 
+                type: 'text', 
+                required: true,
+                validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)")
+            },
+            { 
+                id: 'modalInput1', 
+                label: 'Nombre y Apellidos', 
+                type: 'text', 
+                required: true,
+                validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '').slice(0, 30)")
+            },
+            { 
+                id: 'modalInput2', 
+                label: 'Teléfono', 
+                type: 'text', 
+                required: true,
+                validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)")
+            },
+            { 
+                id: 'modalInputRUC', 
+                label: 'RUC', 
+                type: 'text', 
+                validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)")
+            },
             { id: 'modalInputDireccion', label: 'Dirección', type: 'text', required: true },
             { id: 'modalInputReferencia', label: 'Referencia', type: 'text', required: true }
         ],
