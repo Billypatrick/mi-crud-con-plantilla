@@ -52,6 +52,11 @@ body, button, input {
     grid-column: span 1; /* Cada campo ocupa una columna */
 }
 
+/* Centrar TODOS los encabezados de tabla */
+.table thead th {
+    text-align: center !important; /* !important asegura que prevalezca sobre otros estilos */
+}
+
 .crud__title {
     text-align: center;
 }
@@ -234,11 +239,7 @@ main {
     width: 100%;
 }
 
-/* Alinear el texto de la columna Producto de la tabla ALMACEN a la izquierda */
-#almacenBody td:first-child, 
-#almacenBody th:first-child {
-    text-align: left;
-}
+
 
 /* Ajustar el ancho de la columna ID en la tabla de CLIENTES */
 #clientesBody td:first-child, 
@@ -246,6 +247,8 @@ main {
     width: 50px; /* Espacio suficiente para dos dígitos */
     text-align: center; /* Centrar el contenido */
 }
+
+
 
 /* Ajustar el ancho de la columna Teléfono en la tabla de CLIENTES */
 #clientesBody td:nth-child(4), 
@@ -266,5 +269,142 @@ main {
 #clientesBody th:nth-child(5) {
     width: 120px; /* Espacio suficiente para 11 dígitos */
     text-align: center; /* Centrar el contenido */
+}
+
+/* Alinear el texto de la columna Producto de la tabla ALMACEN a la izquierda */
+#almacenBody td:first-child, 
+#almacenBody th:first-child {
+    text-align: left;
+}
+
+/* Ajustar el ancho de la columna ID en la tabla de ALMACÉN */
+#almacenBody td:first-child, 
+#almacenBody th:first-child {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Producto en la tabla de ALMACÉN */
+#almacenBody td:nth-child(2), 
+#almacenBody th:nth-child(2) {
+    width: 120px; /* Espacio suficiente para diez caracteres */
+    text-align: left; /* Alinear el texto a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Descripcion en la tabla de ALMACÉN */
+#almacenBody td:nth-child(3), 
+#almacenBody th:nth-child(3) {
+    width: 300px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el texto a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Stock en la tabla de ALMACÉN */
+#almacenBody td:nth-child(4), 
+#almacenBody th:nth-child(4) {
+    width: 90px; /* Ajusta el ancho según sea necesario */
+    text-align: right; /* Alinear el texto a la derecha */
+}
+
+/* Ajustar el ancho de la columna Entrada en la tabla de ALMACÉN */
+#almacenBody td:nth-child(6), 
+#almacenBody th:nth-child(6) {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Salida en la tabla de ALMACÉN */
+#almacenBody td:nth-child(7), 
+#almacenBody th:nth-child(7) {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Import. Inventario en la tabla de ALMACÉN */
+#almacenBody td:nth-child(8), 
+#almacenBody th:nth-child(8) {
+    width: 120px; /* Ajusta el ancho según sea necesario */
+    text-align: right; /* Alinear el contenido a la derecha */
+}
+
+/* Ajustar el ancho de la columna ID en la tabla de TRABAJADORES */
+#trabajadoresBody td:first-child, 
+#trabajadoresBody th:first-child {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Nº Trabajador en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(2), 
+#trabajadoresBody th:nth-child(2) {
+    width: 30px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Nombre y Apellidos en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(3), 
+#trabajadoresBody th:nth-child(3) {
+    width: 240px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el texto a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Cargo en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(4), 
+#trabajadoresBody th:nth-child(4) {
+    width: 150px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el texto a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Área en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(5), 
+#trabajadoresBody th:nth-child(5) {
+    width: 150px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el contenido a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Sexo en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(6), 
+#trabajadoresBody th:nth-child(6) {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el contenido a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Sexo en la tabla de TRABAJADORES */
+#trabajadoresBody td:nth-child(7), 
+#trabajadoresBody th:nth-child(7) {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el contenido a la izquierda */
+}
+
+/* Centrar encabezados de tabla */
+.table th.text-center {
+    text-align: center;
+}
+
+/* Ajustar el ancho de la columna ID en la tabla de CAJA */
+#cajaBody td:first-child, 
+#cajaBody th:first-child {
+    width: 50px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Codigo en la tabla de CAJA */
+#cajaBody td:nth-child(2),
+#cajaBody th:nth-child(2) {
+    width: 20px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el contenido a la izquierda */
+}
+
+/* Ajustar el ancho de la columna Monto en la tabla de CAJA */
+#cajaBody td:nth-child(3),
+#cajaBody th:nth-child(3) {
+    width: 200px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Ajustar el ancho de la columna Fecha Registro en la tabla de CAJA */
+#cajaBody td:nth-child(5),
+#cajaBody th:nth-child(5) {
+    width: 160px; /* Ajusta el ancho según sea necesario */
+    text-align: left; /* Alinear el contenido a la izquierda */
 }
 

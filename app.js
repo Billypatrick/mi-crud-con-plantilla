@@ -2,6 +2,30 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("📌 app.js cargado correctamente");
 
 
+    
+        // --- MIGRACIÓN DE DATOS (COLOCAR JUSTO AQUÍ) ---
+        const hasMigrated = localStorage.getItem('migration_v1');
+        if (!hasMigrated) {
+            const cajaData = JSON.parse(localStorage.getItem('cajaData')) || [];
+            
+            const migratedData = cajaData.map(item => {
+                if ('monto' in item && !('montoApertura' in item)) {
+                    return {
+                        ...item,
+                        montoApertura: item.monto,
+                        monto: undefined // Opcional: elimina el campo antiguo
+                    };
+                }
+                return item;
+            });
+            
+            localStorage.setItem('cajaData', JSON.stringify(migratedData));
+            localStorage.setItem('migration_v1', 'true');
+            console.log('✅ Migración de datos completada');
+        }
+        
+
+
     document.getElementById('saveModalData').addEventListener('click', function () {
         // Obtener la sección activa
         const activeSection = document.querySelector('.content-section:not(.d-none)');
@@ -45,16 +69,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 tableBodyId: '#almacenBody',
                 validate: function () {
                     const inputProducto = document.getElementById('modalInput1')?.value.trim();
-                    const inputCantidad = document.getElementById('modalInput2')?.value.trim();
+                    const inputDescripcion = document.getElementById('modalInputDescripcion')?.value.trim();
+                    const inputStock = document.getElementById('modalInput2')?.value.trim();
+                    const inputPrecio = document.getElementById('modalInputPrecio')?.value.trim();
+                    const inputEntrada = document.getElementById('modalInputEntrada')?.value.trim();
+                    const inputSalida = document.getElementById('modalInputSalida')?.value.trim();
         
-                    if (!inputProducto || !inputCantidad) {
+                    if (!inputProducto || !inputDescripcion || !inputStock || !inputPrecio || !inputEntrada || !inputSalida) {
                         alert("⚠️ Todos los campos son obligatorios.");
                         return false;
                     }
         
                     return {
                         producto: inputProducto,
-                        cantidad: inputCantidad
+                        descripcion: inputDescripcion,
+                        stock: inputStock,
+                        precio: parseFloat(inputPrecio),
+                        entrada: parseInt(inputEntrada, 10),
+                        salida: parseInt(inputSalida, 10)
                     };
                 }
             },
@@ -64,15 +96,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 validate: function () {
                     const inputNombre = document.getElementById('modalInput1')?.value.trim();
                     const inputCargo = document.getElementById('modalInput2')?.value.trim();
+                    const inputArea = document.getElementById('modalInputArea')?.value.trim();
+                    const inputSexo = document.getElementById('modalInputSexo')?.value.trim();
+                    const inputEdad = document.getElementById('modalInputEdad')?.value.trim();
         
-                    if (!inputNombre || !inputCargo) {
+                    if (!inputNombre || !inputCargo || !inputArea || !inputSexo || !inputEdad) {
                         alert("⚠️ Todos los campos son obligatorios.");
                         return false;
                     }
         
                     return {
                         nombre: inputNombre,
-                        cargo: inputCargo
+                        cargo: inputCargo,
+                        area: inputArea,
+                        sexo: inputSexo,
+                        edad: inputEdad
                     };
                 }
             },
@@ -80,17 +118,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 key: 'cajaData',
                 tableBodyId: '#cajaBody',
                 validate: function () {
-                    const inputConcepto = document.getElementById('modalInput1')?.value.trim();
-                    const inputMonto = document.getElementById('modalInput2')?.value.trim();
+                    const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
+                    const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
+                    const inputEstado = document.getElementById('modalInputEstado')?.value.trim();
         
-                    if (!inputConcepto || !inputMonto) {
+                    if (!inputDescripcion || !inputMontoApertura || !inputEstado) {
                         alert("⚠️ Todos los campos son obligatorios.");
                         return false;
                     }
         
                     return {
-                        concepto: inputConcepto,
-                        monto: inputMonto
+                        fecha: new Date().toLocaleString('es-PE'),
+                        descripcion: inputDescripcion,
+                        montoApertura: inputMontoApertura,
+                        estado: inputEstado
                     };
                 }
             }
@@ -172,8 +213,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             } else if (key === 'almacenData') {
                 rowContent = `
+                    <td>${index + 1}</td> <!-- Generar el ID automáticamente -->
                     <td>${item.producto || ''}</td>
-                    <td>${item.cantidad || ''}</td>
+                    <td>${item.descripcion || ''}</td>
+                    <td>${item.stock || ''}</td>
+                    <td>${item.precio?.toFixed(2) || '0.00'}</td>
+                    <td>${item.entrada || '0'}</td>
+                    <td>${item.salida || '0'}</td>
+                    <td>${(item.stock * item.precio).toFixed(2) || '0.00'}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
@@ -181,8 +228,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             } else if (key === 'trabajadoresData') {
                 rowContent = `
+                    <td>${index + 1}</td> <!-- Generar el ID automáticamente -->
+                    <td>${item.numeroTrabajador || ''}</td>
                     <td>${item.nombre || ''}</td>
                     <td>${item.cargo || ''}</td>
+                    <td>${item.area || ''}</td>
+                    <td>${item.sexo || ''}</td>
+                    <td>${item.edad || ''}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
@@ -190,8 +242,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             } else if (key === 'cajaData') {
                 rowContent = `
-                    <td>${item.concepto || ''}</td>
-                    <td>${item.monto || ''}</td>
+                    <td>${index + 1}</td> <!-- Generar el ID automáticamente -->
+                    <td>${item.codigo || ''}</td>
+                    <td>${item.fecha || ''}</td>
+                    <td>${item.Descripcion || ''}</td>
+                    <td>${item.montoApertura || ''}</td>
+                    <td>${item.estado || ''}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
@@ -242,15 +298,15 @@ document.addEventListener('DOMContentLoaded', function () {
             ],
             'almacenData': [
                 { id: 'editInputProducto', label: 'Producto', value: item.producto || '' },
-                { id: 'editInputCantidad', label: 'Cantidad', value: item.cantidad || '' }
+                { id: 'editInputStock', label: 'Stock', value: item.stock || '' }
             ],
             'trabajadoresData': [
                 { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '', validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '')") },
                 { id: 'editInputCargo', label: 'Cargo', value: item.cargo || '' }
             ],
             'cajaData': [
-                { id: 'editInputConcepto', label: 'Concepto', value: item.concepto || '' },
-                { id: 'editInputMonto', label: 'Monto', value: item.monto || '' }
+                { id: 'editInputDescripcion', label: 'Descripcion', value: item.descripcion || '' },
+                { id: 'editInputMontoApertura', label: 'MontoApertura', value: item.montoApertura || '' }
             ]
         };
     
@@ -312,7 +368,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     
         const currentData = loadDataFromLocalStorage(key);
-        currentData.push(data);
+        const newData = { 
+            id: currentData.length + 1, 
+            numeroTrabajador: `TR${String(currentData.length + 1).padStart(3, '0')}`, // Generar Nº Trabajador automáticamente
+            ...data,
+            codigo: `CO${String(currentData.length + 1).padStart(3, '0')}`, // Generar Nº Trabajador automáticamente
+            ...data
+        };
+        currentData.push(newData);
         saveDataToLocalStorage(key, currentData);
     
         renderTable(key, tableBodyId);
@@ -356,21 +419,21 @@ document.addEventListener('DOMContentLoaded', function () {
             const nombre = this.querySelector('input[name="nombre"]')?.value.trim() || '';
             const telefono = this.querySelector('input[name="telefono"]')?.value.trim() || '';
             const producto = this.querySelector('input[name="producto"]')?.value.trim() || '';
-            const cantidad = this.querySelector('input[name="cantidad"]')?.value.trim() || '';
-            const concepto = this.querySelector('input[name="concepto"]')?.value.trim() || '';
+            const stock = this.querySelector('input[name="stock"]')?.value.trim() || '';
+            const descripcion = this.querySelector('input[name="descripcion"]')?.value.trim() || '';
             const monto = this.querySelector('input[name="monto"]')?.value.trim() || '';
             const cargo = this.querySelector('input[name="cargo"]')?.value.trim() || '';
 
-            console.log("📥 Capturando datos del formulario:", { nombre, telefono, producto, cantidad, concepto, monto, cargo });
+            console.log("📥 Capturando datos del formulario:", { nombre, telefono, producto, stock, descripcion, monto, cargo });
 
             if (formId === 'formClientes') {
                 addDataToTable(storageKey, tableBodyId, { nombre, telefono });
             } else if (formId === 'formAlmacen') {
-                addDataToTable(storageKey, tableBodyId, { producto, cantidad });
+                addDataToTable(storageKey, tableBodyId, { producto, stock });
             } else if (formId === 'formTrabajadores') {
                 addDataToTable(storageKey, tableBodyId, { nombre, cargo });
             } else if (formId === 'formCaja') {
-                addDataToTable(storageKey, tableBodyId, { concepto, monto });
+                addDataToTable(storageKey, tableBodyId, { descripcion, monto });
             }
 
             this.reset();
@@ -426,9 +489,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
         const modalFieldMap = {
             'clientesData': ['editInputDNI', 'editInputNombre', 'editInputTelefono', 'editInputRUC', 'editInputDireccion', 'editInputReferencia'],
-            'almacenData': ['editInputProducto', 'editInputCantidad'],
+            'almacenData': ['editInputProducto', 'editInputStock'],
             'trabajadoresData': ['editInputNombre', 'editInputCargo'],
-            'cajaData': ['editInputConcepto', 'editInputMonto']
+            'cajaData': ['editInputDescripcion', 'editInputMontoApertura']
         };
     
         const fields = modalFieldMap[key];
@@ -566,22 +629,60 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: 'text', 
                 validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)")
             },
-            { id: 'modalInputDireccion', label: 'Dirección', type: 'text', required: true },
-            { id: 'modalInputReferencia', label: 'Referencia', type: 'text', required: true }
+            { 
+                id: 'modalInputDireccion', 
+                label: 'Dirección', 
+                type: 'text', 
+                required: true 
+            },
+            { 
+                id: 'modalInputReferencia', 
+                label: 'Referencia', 
+                type: 'text', 
+                required: true }
         ],
         'almacen': [
-            { id: 'modalInput1', label: 'Producto', type: 'text', required: true },
-            { id: 'modalInput2', label: 'Cantidad', type: 'number', required: true }
+            { 
+                id: 'modalInput1', 
+                label: 'Producto', 
+                type: 'text', 
+                required: true 
+            },
+            { 
+                id: 'modalInput2', 
+                label: 'Stock', 
+                type: 'number', 
+                required: true 
+            }
         ],
         'trabajadores': [
-            { id: 'modalInput1', label: 'Nombre y Apellidos', type: 'text', required: true },
-            { id: 'modalInput2', label: 'Cargo', type: 'text', required: true }
+            { 
+                id: 'modalInput1', 
+                label: 'Nombre y Apellidos', 
+                type: 'text', 
+                required: true 
+            },
+            { 
+                id: 'modalInput2', 
+                label: 'Cargo', 
+                type: 'text', 
+                required: true 
+            }
         ],
         'caja': [
-            { id: 'modalInput1', label: 'Concepto', type: 'text', required: true },
-            { id: 'modalInput2', label: 'Monto', type: 'number', required: true }
+            { 
+                id: 'modalInput1', 
+                label: 'Descripcion', 
+                type: 'text', 
+                required: true },
+            { 
+                id: 'modalInput2', 
+                label: 'Monto Apertura', 
+                type: 'number', 
+                required: true },
         ]
     };
+    
     
 
     setupForm('formClientes', '#clientesBody', 'clientesData');
