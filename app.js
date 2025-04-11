@@ -417,8 +417,8 @@ window.verDetalleCaja = function(index) {
                         return false;
                     }
 
-                    if (inputEdad < 18 || inputEdad > 65) {
-                        Swal.fire('Error', 'La edad debe estar entre 18 y 65 años', 'error');
+                    if (inputEdad < 18 || inputEdad > 100) {
+                        Swal.fire('Error', 'La edad debe estar entre 18 y 100 años', 'error');
                         return false;
                     }
 
@@ -751,7 +751,7 @@ window.verDetalleCaja = function(index) {
                     validation: (input) => {
                         input.type = 'number';
                         input.min = '18';
-                        input.max = '65';
+                        input.max = '100';
                     }
                 }
             ],
@@ -1150,7 +1150,7 @@ window.verDetalleCaja = function(index) {
                     required: true,
                     validation: (input) => {
                         input.setAttribute('min', '18');
-                        input.setAttribute('max', '65');
+                        input.setAttribute('max', '100');
                     }
                 }
         ],
