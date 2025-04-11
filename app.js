@@ -5,99 +5,83 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('saveEditData').addEventListener('click', function () {
         const key = document.getElementById('editTableKey').value;
         const index = parseInt(document.getElementById('editRowIndex').value, 10);
+        const data = loadDataFromLocalStorage(key);
         
         // Mapeo de campos por sección
         const fieldMap = {
-            'clientesData': ['editInputDNI', 'editInputNombre', 'editInputTelefono', 'editInputRUC', 'editInputDireccion', 'editInputReferencia'],
-            'almacenData': ['editInputProducto', 'editInputStock'],
-            'trabajadoresData': ['editInputNombre', 'editInputCargo'],
-            'cajaData': [  // Campos actualizados para caja
-                'editInputDescripcion', 
-                'editInputMontoApertura', 
-                'editInputMontoDisponible',
-                'editInputMontoCierre',
-                'editInputEstado'
+            'clientesData': [
+                { field: 'dni', id: 'editInputDNI' },
+                { field: 'nombre', id: 'editInputNombre' },
+                { field: 'telefono', id: 'editInputTelefono' },
+                { field: 'ruc', id: 'editInputRUC' },
+                { field: 'direccion', id: 'editInputDireccion' },
+                { field: 'referencia', id: 'editInputReferencia' }
+            ],
+            'almacenData': [
+                { field: 'producto', id: 'editInputProducto' },
+                { field: 'descripcion', id: 'editInputDescripcion' },
+                { field: 'precio', id: 'editInputPrecio', isNumber: true, decimals: 2 },
+                { field: 'entrada', id: 'editInputEntrada', isNumber: true },
+                { field: 'salida', id: 'editInputSalida', isNumber: true }
+            ],
+            'trabajadoresData': [
+                { field: 'nombre', id: 'editInputNombre' },
+                { field: 'cargo', id: 'editInputCargo' },
+                { field: 'area', id: 'editInputArea' },
+                { field: 'sexo', id: 'editInputSexo' },
+                { field: 'edad', id: 'editInputEdad', isNumber: true }
+            ],
+            'cajaData': [
+                { field: 'descripcion', id: 'editInputDescripcion' },
+                { field: 'montoApertura', id: 'editInputMontoApertura', isNumber: true, decimals: 2 },
+                { field: 'montoDisponible', id: 'editInputMontoDisponible', isNumber: true, decimals: 2 },
+                { field: 'montoCierre', id: 'editInputMontoCierre', isNumber: true, decimals: 2 },
+                { field: 'estado', id: 'editInputEstado' }
             ]
         };
-
-        if (key === 'cajaData') {
-            const estado = data[index].estado;
-            const montoApertura = parseFloat(data[index].montoapertura);
-            const montoDisponible = parseFloat(data[index].montodisponible);
-            const montoCierre = parseFloat(data[index].montocierre);
+    
+        // Validaciones específicas para almacén
+        if (key === 'almacenData') {
+            const entrada = parseInt(document.getElementById('editInputEntrada').value) || 0;
+            const salida = parseInt(document.getElementById('editInputSalida').value) || 0;
+            const stockActual = parseInt(data[index].stock) || 0;
             
-            if (montoDisponible > montoApertura) {
-                Swal.fire('Error', 'El disponible no puede ser mayor al apertura', 'error');
+            if (salida > stockActual + entrada) {
+                Swal.fire('Error', 'La salida no puede ser mayor al stock disponible', 'error');
                 return;
             }
-            
-            if (estado === 'Cerrado') {
-                if (montoCierre <= 0) {
-                    Swal.fire('Error', 'Debe ingresar un monto de cierre válido', 'error');
-                    return;
-                }
-                if (montoCierre > montoDisponible) {
-                    Swal.fire('Error', 'El monto de cierre no puede ser mayor al disponible', 'error');
-                    return;
-                }
-            }
         }
     
-        const fields = fieldMap[key];
-        if (!fields) {
-            console.error(`No hay campos definidos para: ${key}`);
-            return;
-        }
-    
-        const data = loadDataFromLocalStorage(key);
-        
-        // Actualizar todos los campos del formulario
-        fields.forEach(fieldId => {
-            const input = document.getElementById(fieldId);
+        // Actualizar los datos
+        fieldMap[key].forEach(fieldConfig => {
+            const input = document.getElementById(fieldConfig.id);
             if (input) {
-                const fieldName = fieldId.replace('editInput', '').toLowerCase();
-                data[index][fieldName] = input.type === 'number' ? 
-                    parseFloat(input.value).toFixed(2) : 
-                    input.value.trim();
+                if (fieldConfig.isNumber) {
+                    const value = parseFloat(input.value) || 0;
+                    data[index][fieldConfig.field] = fieldConfig.decimals ? 
+                        value.toFixed(fieldConfig.decimals) : 
+                        value;
+                } else {
+                    data[index][fieldConfig.field] = input.value.trim();
+                }
             }
         });
     
-        // Validaciones específicas para caja
-        if (key === 'cajaData') {
-            const estado = data[index].estado;
-            const montoCierre = data[index].montocierre;
-            
-            // Validar monto de cierre cuando el estado es "Cerrado"
-            if (estado === 'Cerrado' && parseFloat(montoCierre) <= 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Debe ingresar un monto de cierre válido cuando el estado es "Cerrado"'
-                });
-                return;
-            }
-            
-            // Resetear monto disponible si se reabre la caja
-            if (estado === 'Abierto') {
-                data[index].montodisponible = data[index].montoapertura;
-                data[index].montocierre = '0.00'; // Resetear monto cierre
-            }
-            
-            // Si se cierra la caja, asegurar que el monto disponible coincida con el de cierre
-            if (estado === 'Cerrado') {
-                data[index].montodisponible = data[index].montocierre;
-            }
+        // Cálculos adicionales para almacén
+        if (key === 'almacenData') {
+            const entrada = parseInt(document.getElementById('editInputEntrada').value) || 0;
+            const salida = parseInt(document.getElementById('editInputSalida').value) || 0;
+            data[index].stock = (parseInt(data[index].stock) + entrada - salida).toString();
         }
     
-        // Guardar y actualizar vista
+        // Guardar cambios
         saveDataToLocalStorage(key, data);
         renderTable(key, `#${key.replace('Data', 'Body')}`);
         
-        // Cerrar modal
+        // Cerrar modal y mostrar confirmación
         const editModal = bootstrap.Modal.getInstance(document.getElementById('editDataModal'));
         editModal.hide();
         
-        // Notificación de éxito
         Swal.fire({
             icon: 'success',
             title: 'Actualizado',
@@ -659,34 +643,8 @@ window.verDetalleCaja = function(index) {
                 { id: 'editInputReferencia', label: 'Referencia', value: item.referencia || '' }
             ],
             'almacenData': [
-                { 
-                    id: 'editInputProducto', 
-                    label: 'Producto', 
-                    value: item.producto || '',
-                    validation: (input) => input.setAttribute('maxlength', '100')
-                },
-                { 
-                    id: 'editInputDescripcion', 
-                    label: 'Descripción', 
-                    value: item.descripcion || '',
-                    validation: (input) => {
-                        input.type = 'textarea';
-                        input.setAttribute('rows', '3');
-                        input.setAttribute('maxlength', '255');
-                    }
-                },
-                { 
-                    id: 'editInputStock', 
-                    label: 'Stock', 
-                    value: item.stock || '0',
-                    validation: (input) => {
-                        input.type = 'number';
-                        input.min = '0';
-                        input.step = '1';
-                        input.readOnly = true; // Stock no editable directamente
-                        input.style.backgroundColor = '#f8f9fa';
-                    }
-                },
+                { id: 'editInputProducto', label: 'Producto', value: item.producto || '' },
+                { id: 'editInputDescripcion', label: 'Descripción', type: 'textarea', value: item.descripcion || '' },
                 { 
                     id: 'editInputPrecio', 
                     label: 'Precio', 
@@ -700,7 +658,7 @@ window.verDetalleCaja = function(index) {
                 { 
                     id: 'editInputEntrada', 
                     label: 'Entrada', 
-                    value: '0', // Siempre empieza en 0 para edición
+                    value: '0',
                     validation: (input) => {
                         input.type = 'number';
                         input.min = '0';
@@ -710,7 +668,7 @@ window.verDetalleCaja = function(index) {
                 { 
                     id: 'editInputSalida', 
                     label: 'Salida', 
-                    value: '0', // Siempre empieza en 0 para edición
+                    value: '0',
                     validation: (input) => {
                         input.type = 'number';
                         input.min = '0';
