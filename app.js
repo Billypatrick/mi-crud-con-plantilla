@@ -2,6 +2,163 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("📌 app.js cargado correctamente");
 
 
+    document.getElementById('saveEditData').addEventListener('click', function () {
+        const key = document.getElementById('editTableKey').value;
+        const index = parseInt(document.getElementById('editRowIndex').value, 10);
+        
+        // Mapeo de campos por sección
+        const fieldMap = {
+            'clientesData': ['editInputDNI', 'editInputNombre', 'editInputTelefono', 'editInputRUC', 'editInputDireccion', 'editInputReferencia'],
+            'almacenData': ['editInputProducto', 'editInputStock'],
+            'trabajadoresData': ['editInputNombre', 'editInputCargo'],
+            'cajaData': [  // Campos actualizados para caja
+                'editInputDescripcion', 
+                'editInputMontoApertura', 
+                'editInputMontoDisponible',
+                'editInputMontoCierre',
+                'editInputEstado'
+            ]
+        };
+
+        if (key === 'cajaData') {
+            const estado = data[index].estado;
+            const montoApertura = parseFloat(data[index].montoapertura);
+            const montoDisponible = parseFloat(data[index].montodisponible);
+            const montoCierre = parseFloat(data[index].montocierre);
+            
+            if (montoDisponible > montoApertura) {
+                Swal.fire('Error', 'El disponible no puede ser mayor al apertura', 'error');
+                return;
+            }
+            
+            if (estado === 'Cerrado') {
+                if (montoCierre <= 0) {
+                    Swal.fire('Error', 'Debe ingresar un monto de cierre válido', 'error');
+                    return;
+                }
+                if (montoCierre > montoDisponible) {
+                    Swal.fire('Error', 'El monto de cierre no puede ser mayor al disponible', 'error');
+                    return;
+                }
+            }
+        }
+    
+        const fields = fieldMap[key];
+        if (!fields) {
+            console.error(`No hay campos definidos para: ${key}`);
+            return;
+        }
+    
+        const data = loadDataFromLocalStorage(key);
+        
+        // Actualizar todos los campos del formulario
+        fields.forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                const fieldName = fieldId.replace('editInput', '').toLowerCase();
+                data[index][fieldName] = input.type === 'number' ? 
+                    parseFloat(input.value).toFixed(2) : 
+                    input.value.trim();
+            }
+        });
+    
+        // Validaciones específicas para caja
+        if (key === 'cajaData') {
+            const estado = data[index].estado;
+            const montoCierre = data[index].montocierre;
+            
+            // Validar monto de cierre cuando el estado es "Cerrado"
+            if (estado === 'Cerrado' && parseFloat(montoCierre) <= 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Debe ingresar un monto de cierre válido cuando el estado es "Cerrado"'
+                });
+                return;
+            }
+            
+            // Resetear monto disponible si se reabre la caja
+            if (estado === 'Abierto') {
+                data[index].montodisponible = data[index].montoapertura;
+                data[index].montocierre = '0.00'; // Resetear monto cierre
+            }
+            
+            // Si se cierra la caja, asegurar que el monto disponible coincida con el de cierre
+            if (estado === 'Cerrado') {
+                data[index].montodisponible = data[index].montocierre;
+            }
+        }
+    
+        // Guardar y actualizar vista
+        saveDataToLocalStorage(key, data);
+        renderTable(key, `#${key.replace('Data', 'Body')}`);
+        
+        // Cerrar modal
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editDataModal'));
+        editModal.hide();
+        
+        // Notificación de éxito
+        Swal.fire({
+            icon: 'success',
+            title: 'Actualizado',
+            text: 'Los cambios se guardaron correctamente',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+
+
+    function createModalInput(field) {
+        let input;
+        
+        if (field.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.className = 'form-control';
+            input.id = field.id;
+            input.value = field.value || '';
+            input.rows = 3;
+        } 
+        else if (field.type === 'select') {
+            input = document.createElement('select');
+            input.className = 'form-select';
+            input.id = field.id;
+            
+            // Agregar opción vacía si no es requerido
+            if (!field.required) {
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '-- Seleccione --';
+                input.appendChild(emptyOption);
+            }
+            
+            // Agregar opciones
+            field.options.forEach(option => {
+                const optElement = document.createElement('option');
+                optElement.value = option;
+                optElement.textContent = option;
+                input.appendChild(optElement);
+            });
+            
+            if (field.value) input.value = field.value;
+        }
+        else {
+            input = document.createElement('input');
+            input.type = field.type || 'text';
+            input.className = 'form-control';
+            input.id = field.id;
+            input.value = field.value || '';
+        }
+        
+        if (field.required) {
+            input.required = true;
+        }
+        
+        if (field.validation) {
+            field.validation(input);
+        }
+        
+        return input;
+    }
     
         // --- MIGRACIÓN DE DATOS (COLOCAR JUSTO AQUÍ) ---
         const hasMigrated = localStorage.getItem('migration_v1');
@@ -23,7 +180,154 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('migration_v1', 'true');
             console.log('✅ Migración de datos completada');
         }
+
+
+        // Migración de datos existentes para agregar montoDisponible
+        const hasMigratedCaja = localStorage.getItem('migration_caja_v2');
+        if (!hasMigratedCaja) {
+            const cajaData = JSON.parse(localStorage.getItem('cajaData')) || [];
+            
+            const migratedData = cajaData.map(item => {
+                // Si no existe montoDisponible, lo inicializamos con el montoApertura
+                if (!('montoDisponible' in item)) {
+                    return {
+                        ...item,
+                        montoDisponible: item.montoApertura || '0.00'
+                    };
+                }
+                return item;
+            });
+            
+            localStorage.setItem('cajaData', JSON.stringify(migratedData));
+            localStorage.setItem('migration_caja_v2', 'true');
+            console.log('✅ Migración de datos de caja completada (v2)');
+        }
         
+
+        // Migración de datos existentes para agregar montoCierre
+const hasMigratedCajaV3 = localStorage.getItem('migration_caja_v3');
+if (!hasMigratedCajaV3) {
+    const cajaData = JSON.parse(localStorage.getItem('cajaData')) || [];
+    
+    const migratedData = cajaData.map(item => {
+        if (!('montoCierre' in item)) {
+            return {
+                ...item,
+                montoCierre: item.estado === 'Cerrado' ? 
+    (item.montoCierre || item.montoDisponible || item.montoApertura || '0.00') : 
+    '0.00'
+            };
+        }
+        return item;
+    });
+    
+    localStorage.setItem('cajaData', JSON.stringify(migratedData));
+    localStorage.setItem('migration_caja_v3', 'true');
+    console.log('✅ Migración de datos de caja completada (v3) - Monto Cierre añadido');
+}
+
+
+window.cerrarCaja = function(index) {
+    const cajaData = loadDataFromLocalStorage('cajaData');
+    const registro = cajaData[index];
+    
+    if (!registro) {
+        console.error('Registro de caja no encontrado');
+        return;
+    }
+
+    if (registro.estado === 'Cerrado') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Esta caja ya está cerrada',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Cerrar Caja',
+        html: `
+            <p>Monto Disponible: S/ ${registro.montoDisponible || registro.montoApertura}</p>
+            <input id="swalMontoCierre" type="number" class="swal2-input" 
+                   placeholder="Monto Cierre" value="${registro.montoDisponible || registro.montoApertura}" 
+                   step="0.01" min="0" required>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar Cierre',
+        cancelButtonText: 'Cancelar',
+        focusConfirm: false,
+        preConfirm: () => {
+            const input = document.getElementById('swalMontoCierre');
+            const montoCierre = parseFloat(input.value);
+            
+            if (isNaN(montoCierre)) {
+                Swal.showValidationMessage('Ingrese un monto válido');
+                return false;
+            }
+            if (montoCierre < 0) {
+                Swal.showValidationMessage('El monto no puede ser negativo');
+                return false;
+            }
+            if (montoCierre > parseFloat(registro.montoDisponible || registro.montoApertura)) {
+                Swal.showValidationMessage('El monto de cierre no puede ser mayor al disponible');
+                return false;
+            }
+            
+            return montoCierre.toFixed(2);
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Actualizar los datos
+            registro.montoCierre = result.value;
+            registro.estado = 'Cerrado';
+            registro.montoDisponible = result.value;
+            
+            // Guardar cambios
+            saveDataToLocalStorage('cajaData', cajaData);
+            
+            // Actualizar la tabla
+            renderTable('cajaData', '#cajaBody');
+            
+            // Mostrar confirmación
+            Swal.fire({
+                icon: 'success',
+                title: '¡Caja Cerrada!',
+                text: `Monto de cierre: S/ ${registro.montoCierre}`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    });
+};
+
+window.verDetalleCaja = function(index) {
+    const cajaData = loadDataFromLocalStorage('cajaData');
+    const registro = cajaData[index];
+    
+    if (!registro) {
+        console.error('Registro de caja no encontrado');
+        return;
+    }
+
+    Swal.fire({
+        title: `Detalles de Caja: ${registro.codigo || ''}`,
+        html: `
+            <div class="text-start">
+                <p><strong>Fecha:</strong> ${registro.fecha || ''}</p>
+                <p><strong>Descripción:</strong> ${registro.descripcion || ''}</p>
+                <p><strong>Estado:</strong> <span class="badge ${registro.estado === 'Cerrado' ? 'bg-danger' : 'bg-success'}">${registro.estado || 'Abierto'}</span></p>
+                <p><strong>Monto Apertura:</strong> S/ ${registro.montoApertura || '0.00'}</p>
+                <p><strong>Monto Disponible:</strong> S/ ${registro.montoDisponible || '0.00'}</p>
+                ${registro.estado === 'Cerrado' ? `<p><strong>Monto Cierre:</strong> S/ ${registro.montoCierre || '0.00'}</p>` : ''}
+            </div>
+        `,
+        confirmButtonText: 'Cerrar',
+        width: '600px'
+    });
+};
 
 
     document.getElementById('saveModalData').addEventListener('click', function () {
@@ -68,25 +372,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 key: 'almacenData',
                 tableBodyId: '#almacenBody',
                 validate: function () {
-                    const inputProducto = document.getElementById('modalInput1')?.value.trim();
+                    const inputProducto = document.getElementById('modalInputProducto')?.value.trim();
                     const inputDescripcion = document.getElementById('modalInputDescripcion')?.value.trim();
-                    const inputStock = document.getElementById('modalInput2')?.value.trim();
-                    const inputPrecio = document.getElementById('modalInputPrecio')?.value.trim();
-                    const inputEntrada = document.getElementById('modalInputEntrada')?.value.trim();
-                    const inputSalida = document.getElementById('modalInputSalida')?.value.trim();
-        
-                    if (!inputProducto || !inputDescripcion || !inputStock || !inputPrecio || !inputEntrada || !inputSalida) {
-                        alert("⚠️ Todos los campos son obligatorios.");
+                    const inputStock = parseInt(document.getElementById('modalInputStock')?.value || 0);
+                    const inputPrecio = parseFloat(document.getElementById('modalInputPrecio')?.value || 0);
+                    const inputEntrada = parseInt(document.getElementById('modalInputEntrada')?.value || 0);
+                    const inputSalida = parseInt(document.getElementById('modalInputSalida')?.value || 0);
+
+                    if (!inputProducto || isNaN(inputStock) || isNaN(inputPrecio) || isNaN(inputEntrada) || isNaN(inputSalida)) {
+                        Swal.fire('Error', 'Todos los campos obligatorios deben ser completados correctamente', 'error');
                         return false;
                     }
-        
+
+                    // Calcular stock final
+                    const stockFinal = inputStock + inputEntrada - inputSalida;
+                    
+                    if (stockFinal < 0) {
+                        Swal.fire('Error', 'La salida no puede ser mayor que el stock disponible', 'error');
+                        return false;
+                    }
+
                     return {
                         producto: inputProducto,
                         descripcion: inputDescripcion,
-                        stock: inputStock,
-                        precio: parseFloat(inputPrecio),
-                        entrada: parseInt(inputEntrada, 10),
-                        salida: parseInt(inputSalida, 10)
+                        stock: stockFinal,
+                        precio: inputPrecio.toFixed(2),
+                        entrada: inputEntrada,
+                        salida: inputSalida
                     };
                 }
             },
@@ -94,23 +406,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 key: 'trabajadoresData',
                 tableBodyId: '#trabajadoresBody',
                 validate: function () {
-                    const inputNombre = document.getElementById('modalInput1')?.value.trim();
-                    const inputCargo = document.getElementById('modalInput2')?.value.trim();
-                    const inputArea = document.getElementById('modalInputArea')?.value.trim();
-                    const inputSexo = document.getElementById('modalInputSexo')?.value.trim();
-                    const inputEdad = document.getElementById('modalInputEdad')?.value.trim();
-        
-                    if (!inputNombre || !inputCargo || !inputArea || !inputSexo || !inputEdad) {
-                        alert("⚠️ Todos los campos son obligatorios.");
+                    const inputNombre = document.getElementById('modalInputNombre')?.value.trim();
+                    const inputCargo = document.getElementById('modalInputCargo')?.value.trim();
+                    const inputArea = document.getElementById('modalInputArea')?.value;
+                    const inputSexo = document.getElementById('modalInputSexo')?.value;
+                    const inputEdad = parseInt(document.getElementById('modalInputEdad')?.value);
+
+                    if (!inputNombre || !inputCargo || isNaN(inputEdad)) {
+                        Swal.fire('Error', 'Nombre, Cargo y Edad son campos obligatorios', 'error');
                         return false;
                     }
-        
+
+                    if (inputEdad < 18 || inputEdad > 65) {
+                        Swal.fire('Error', 'La edad debe estar entre 18 y 65 años', 'error');
+                        return false;
+                    }
+
                     return {
                         nombre: inputNombre,
                         cargo: inputCargo,
-                        area: inputArea,
-                        sexo: inputSexo,
-                        edad: inputEdad
+                        area: inputArea || '',
+                        sexo: inputSexo || '',
+                        edad: inputEdad,
+                        numeroTrabajador: `TR${String(loadDataFromLocalStorage('trabajadoresData').length + 1).padStart(3, '0')}`
                     };
                 }
             },
@@ -120,22 +438,56 @@ document.addEventListener('DOMContentLoaded', function () {
                 validate: function () {
                     const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
                     const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
-                    const inputEstado = document.getElementById('modalInputEstado')?.value.trim();
-        
-                    if (!inputDescripcion || !inputMontoApertura || !inputEstado) {
+                    
+                    if (!inputDescripcion || !inputMontoApertura) {
                         alert("⚠️ Todos los campos son obligatorios.");
                         return false;
                     }
-        
+                    
                     return {
                         fecha: new Date().toLocaleString('es-PE'),
+                        codigo: `CO${String(loadDataFromLocalStorage('cajaData').length + 1).padStart(3, '0')}`,
                         descripcion: inputDescripcion,
-                        montoApertura: inputMontoApertura,
-                        estado: inputEstado
+                        montoApertura: parseFloat(inputMontoApertura).toFixed(2),
+                        montoDisponible: parseFloat(inputMontoApertura).toFixed(2),
+                        montoCierre: '0.00',
+                        estado: 'Abierto' // Estado automático al crear
+                    };
+                }
+            },
+            'caja': {
+                key: 'cajaData',
+                tableBodyId: '#cajaBody',
+                validate: function () {
+                    const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
+                    const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
+                    
+                    if (!inputDescripcion || !inputMontoApertura) {
+                        alert("⚠️ Todos los campos son obligatorios.");
+                        return false;
+                    }
+                    
+                    return {
+                        fecha: new Date().toLocaleString('es-PE'),
+                        codigo: `CO${String(loadDataFromLocalStorage('cajaData').length + 1).padStart(3, '0')}`,
+                        descripcion: inputDescripcion,
+                        montoApertura: parseFloat(inputMontoApertura).toFixed(2),
+                        montoDisponible: parseFloat(inputMontoApertura).toFixed(2),
+                        montoCierre: '0.00',
+                        estado: 'Abierto' // Estado automático al crear
                     };
                 }
             }
         };
+
+        function actualizarMontoDisponible(key, index, nuevoMonto) {
+            const data = loadDataFromLocalStorage(key);
+            if (data[index]) {
+                data[index].montoDisponible = parseFloat(nuevoMonto).toFixed(2);
+                saveDataToLocalStorage(key, data);
+                renderTable(key, `#${key.replace('Data', 'Body')}`);
+            }
+        }
     
         const config = sectionMap[sectionId];
         if (!config) {
@@ -212,15 +564,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 `;
             } else if (key === 'almacenData') {
+                const importeInventario = (item.stock * parseFloat(item.precio || 0)).toFixed(2);
+                
                 rowContent = `
-                    <td>${index + 1}</td> <!-- Generar el ID automáticamente -->
+                    <td>${index + 1}</td>
                     <td>${item.producto || ''}</td>
                     <td>${item.descripcion || ''}</td>
-                    <td>${item.stock || ''}</td>
-                    <td>${item.precio?.toFixed(2) || '0.00'}</td>
+                    <td>${item.stock || '0'}</td>
+                    <td>S/ ${parseFloat(item.precio || 0).toFixed(2)}</td>
                     <td>${item.entrada || '0'}</td>
                     <td>${item.salida || '0'}</td>
-                    <td>${(item.stock * item.precio).toFixed(2) || '0.00'}</td>
+                    <td>S/ ${importeInventario}</td>
                     <td>
                         <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
@@ -242,15 +596,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             } else if (key === 'cajaData') {
                 rowContent = `
-                    <td>${index + 1}</td> <!-- Generar el ID automáticamente -->
+                    <td>${index + 1}</td>
                     <td>${item.codigo || ''}</td>
                     <td>${item.fecha || ''}</td>
-                    <td>${item.Descripcion || ''}</td>
-                    <td>${item.montoApertura || ''}</td>
-                    <td>${item.estado || ''}</td>
+                    <td>${item.descripcion || ''}</td>
+                    <td>S/ ${item.montoApertura || '0.00'}</td>
+                    <td>S/ ${item.montoDisponible || item.montoApertura || '0.00'}</td>
+                    <td>S/ ${item.montoCierre || '0.00'}</td>
+                    <td class="text-white fw-bold ${item.estado === 'Cerrado' ? 'bg-danger' : 'bg-success'}">
+                    ${item.estado || 'Abierto'}
+                    </td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                        <button class="btn btn-success btn-sm" onclick="verDetalleCaja(${index})">Ver</button>
+                        <button class="btn btn-warning btn-sm mt-1" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
+                        <button class="btn btn-danger btn-sm mt-1" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                        ${item.estado !== 'Cerrado' ? 
+                            `<button class="btn btn-dark btn-sm mt-1" onclick="cerrarCaja(${index})">Cerrar Caja</button>` : 
+                            ''}
                     </td>
                 `;
             }
@@ -297,16 +659,138 @@ document.addEventListener('DOMContentLoaded', function () {
                 { id: 'editInputReferencia', label: 'Referencia', value: item.referencia || '' }
             ],
             'almacenData': [
-                { id: 'editInputProducto', label: 'Producto', value: item.producto || '' },
-                { id: 'editInputStock', label: 'Stock', value: item.stock || '' }
+                { 
+                    id: 'editInputProducto', 
+                    label: 'Producto', 
+                    value: item.producto || '',
+                    validation: (input) => input.setAttribute('maxlength', '100')
+                },
+                { 
+                    id: 'editInputDescripcion', 
+                    label: 'Descripción', 
+                    value: item.descripcion || '',
+                    validation: (input) => {
+                        input.type = 'textarea';
+                        input.setAttribute('rows', '3');
+                        input.setAttribute('maxlength', '255');
+                    }
+                },
+                { 
+                    id: 'editInputStock', 
+                    label: 'Stock', 
+                    value: item.stock || '0',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.min = '0';
+                        input.step = '1';
+                        input.readOnly = true; // Stock no editable directamente
+                        input.style.backgroundColor = '#f8f9fa';
+                    }
+                },
+                { 
+                    id: 'editInputPrecio', 
+                    label: 'Precio', 
+                    value: item.precio || '0.00',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.min = '0';
+                    }
+                },
+                { 
+                    id: 'editInputEntrada', 
+                    label: 'Entrada', 
+                    value: '0', // Siempre empieza en 0 para edición
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.min = '0';
+                        input.step = '1';
+                    }
+                },
+                { 
+                    id: 'editInputSalida', 
+                    label: 'Salida', 
+                    value: '0', // Siempre empieza en 0 para edición
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.min = '0';
+                        input.step = '1';
+                    }
+                }
             ],
             'trabajadoresData': [
-                { id: 'editInputNombre', label: 'Nombre y Apellidos', value: item.nombre || '', validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '')") },
-                { id: 'editInputCargo', label: 'Cargo', value: item.cargo || '' }
+                { 
+                    id: 'editInputNombre', 
+                    label: 'Nombre y Apellidos', 
+                    value: item.nombre || '',
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '')")
+                },
+                { 
+                    id: 'editInputCargo', 
+                    label: 'Cargo', 
+                    value: item.cargo || '' 
+                },
+                {
+                    id: 'editInputArea',
+                    label: 'Área',
+                    type: 'select',
+                    options: ['Ventas', 'Logística', 'Administración', 'Recursos Humanos', 'Producción'],
+                    value: item.area || ''
+                },
+                {
+                    id: 'editInputSexo',
+                    label: 'Sexo',
+                    type: 'select',
+                    options: ['Masculino', 'Femenino', 'Otro'],
+                    value: item.sexo || ''
+                },
+                { 
+                    id: 'editInputEdad', 
+                    label: 'Edad', 
+                    value: item.edad || '',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.min = '18';
+                        input.max = '65';
+                    }
+                }
             ],
             'cajaData': [
                 { id: 'editInputDescripcion', label: 'Descripcion', value: item.descripcion || '' },
-                { id: 'editInputMontoApertura', label: 'MontoApertura', value: item.montoApertura || '' }
+                { 
+                    id: 'editInputMontoApertura', 
+                    label: 'Monto Apertura', 
+                    value: item.montoApertura || '',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.min = '0';
+                        input.readOnly = item.estado === 'Cerrado'; // Solo lectura si el estado es "Cerrado"
+                    }
+                },
+                {
+                    id: 'editInputMontoDisponible',
+                    label: 'Monto Disponible',
+                    value: item.montoDisponible || item.montoApertura || '',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.min = '0';
+                        input.readOnly = true; // Solo lectura ya que se calcula
+                        input.style.backgroundColor = '#f8f9fa'; // Fondo gris claro para indicar que es solo lectura
+                    }
+                },
+                {
+                    id: 'editInputMontoCierre',
+                    label: 'Monto Cierre',
+                    value: item.montoCierre || '0.00',
+                    validation: (input) => {
+                        input.type = 'number';
+                        input.step = '0.01';
+                        input.min = '0';
+                        input.readOnly = item.estado !== 'Cerrado'; // Solo editable al cerrar caja
+                    }
+                }
             ]
         };
     
@@ -326,25 +810,25 @@ document.addEventListener('DOMContentLoaded', function () {
         fields.forEach(field => {
             const fieldDiv = document.createElement('div');
             fieldDiv.className = 'mb-3';
-    
+        
             const label = document.createElement('label');
             label.setAttribute('for', field.id);
             label.className = 'form-label';
             label.textContent = field.label;
-    
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'form-control';
-            input.id = field.id;
-            input.value = field.value;
-    
-            // Aplicar validación si está definida
-            if (field.validation) {
-                field.validation(input);
+        
+            const input = createModalInput(field);
+            
+            if (field.id.includes('Precio')) {
+                const currencyWrapper = document.createElement('div');
+                currencyWrapper.className = 'currency-input';
+                currencyWrapper.appendChild(input);
+                fieldDiv.appendChild(label);
+                fieldDiv.appendChild(currencyWrapper);
+            } else {
+                fieldDiv.appendChild(label);
+                fieldDiv.appendChild(input);
             }
-    
-            fieldDiv.appendChild(label);
-            fieldDiv.appendChild(input);
+            
             editModalForm.appendChild(fieldDiv);
         });
     
@@ -483,66 +967,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    document.getElementById('saveEditData').addEventListener('click', function () {
-        const key = document.getElementById('editTableKey').value;
-        const index = parseInt(document.getElementById('editRowIndex').value, 10);
     
-        const modalFieldMap = {
-            'clientesData': ['editInputDNI', 'editInputNombre', 'editInputTelefono', 'editInputRUC', 'editInputDireccion', 'editInputReferencia'],
-            'almacenData': ['editInputProducto', 'editInputStock'],
-            'trabajadoresData': ['editInputNombre', 'editInputCargo'],
-            'cajaData': ['editInputDescripcion', 'editInputMontoApertura']
-        };
-    
-        const fields = modalFieldMap[key];
-        if (!fields) {
-            console.error(`❌ No se encontraron campos para la tabla: ${key}`);
-            return;
-        }
-    
-        const updatedData = {};
-        fields.forEach(fieldId => {
-            const input = document.getElementById(fieldId);
-            if (input) {
-                const fieldName = fieldId.replace('editInput', '').toLowerCase();
-                updatedData[fieldName] = input.value.trim();
-            }
-        });
-    
-        // Validar restricciones específicas
-        if (key === 'clientesData') {
-            const dni = updatedData.dni;
-            const nombre = updatedData.nombre;
-    
-            if (!/^\d{8}$/.test(dni)) {
-                alert("⚠️ El DNI debe contener exactamente 8 dígitos numéricos.");
-                return;
-            }
-    
-            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
-                alert("⚠️ El campo Nombre y Apellidos solo puede contener letras.");
-                return;
-            }
-    
-            // Validar solo los campos obligatorios (excluyendo RUC)
-            if (!updatedData.dni || !updatedData.nombre || !updatedData.telefono || !updatedData.direccion || !updatedData.referencia) {
-                alert("⚠️ Todos los campos obligatorios deben ser completados.");
-                return;
-            }
-        }
-    
-        const data = loadDataFromLocalStorage(key);
-        Object.assign(data[index], updatedData);
-        saveDataToLocalStorage(key, data);
-    
-        const tableBodyId = `#${key.replace('Data', 'Body')}`;
-        renderTable(key, tableBodyId);
-    
-        const editModal = bootstrap.Modal.getInstance(document.getElementById('editDataModal'));
-        editModal.hide();
-    
-        console.log(`✅ Fila ${index} actualizada en: ${key}`, data[index]);
-    });
     
     function updateModalFields(sectionId) {
         const modalForm = document.getElementById('modalForm');
@@ -568,18 +993,7 @@ document.addEventListener('DOMContentLoaded', function () {
             label.className = 'form-label';
             label.textContent = field.label;
     
-            const input = document.createElement('input');
-            input.type = field.type;
-            input.className = 'form-control';
-            input.id = field.id;
-            if (field.required) {
-                input.required = true;
-            }
-    
-            // Aplicar validación si está definida
-            if (field.validation) {
-                field.validation(input);
-            }
+            const input = createModalInput(field);
     
             fieldDiv.appendChild(label);
             fieldDiv.appendChild(input);
@@ -643,43 +1057,116 @@ document.addEventListener('DOMContentLoaded', function () {
         ],
         'almacen': [
             { 
-                id: 'modalInput1', 
+                id: 'modalInputProducto', 
                 label: 'Producto', 
                 type: 'text', 
-                required: true 
+                required: true,
+                validation: (input) => input.setAttribute('maxlength', '100')
+            },
+            {
+                id: 'modalInputDescripcion',
+                label: 'Descripción',
+                type: 'textarea',
+                validation: (input) => {
+                    input.setAttribute('rows', '3');
+                    input.setAttribute('maxlength', '255');
+                }
             },
             { 
-                id: 'modalInput2', 
-                label: 'Stock', 
+                id: 'modalInputStock', 
+                label: 'Stock Inicial', 
                 type: 'number', 
-                required: true 
+                required: true,
+                validation: (input) => {
+                    input.setAttribute('min', '0');
+                    input.setAttribute('step', '1');
+                }
+            },
+            { 
+                id: 'modalInputPrecio', 
+                label: 'Precio Unitario', 
+                type: 'number', 
+                required: true,
+                validation: (input) => {
+                    input.setAttribute('min', '0');
+                    input.setAttribute('step', '0.01');
+                }
+            },
+            { 
+                id: 'modalInputEntrada', 
+                label: 'Entrada', 
+                type: 'number', 
+                required: true,
+                validation: (input) => {
+                    input.setAttribute('min', '0');
+                    input.setAttribute('step', '1');
+                    input.value = '0'; // Valor por defecto
+                }
+            },
+            { 
+                id: 'modalInputSalida', 
+                label: 'Salida', 
+                type: 'number', 
+                required: true,
+                validation: (input) => {
+                    input.setAttribute('min', '0');
+                    input.setAttribute('step', '1');
+                    input.value = '0'; // Valor por defecto
+                }
             }
         ],
         'trabajadores': [
-            { 
-                id: 'modalInput1', 
-                label: 'Nombre y Apellidos', 
-                type: 'text', 
-                required: true 
-            },
-            { 
-                id: 'modalInput2', 
-                label: 'Cargo', 
-                type: 'text', 
-                required: true 
-            }
+                { 
+                    id: 'modalInputNombre', 
+                    label: 'Nombre y Apellidos', 
+                    type: 'text', 
+                    required: true,
+                    validation: (input) => input.setAttribute('oninput', "this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]/g, '')")
+                },
+                { 
+                    id: 'modalInputCargo', 
+                    label: 'Cargo', 
+                    type: 'text', 
+                    required: true
+                },
+                {
+                    id: 'modalInputArea',
+                    label: 'Área',
+                    type: 'select',
+                    options: ['Ventas', 'Logística', 'Administración', 'Recursos Humanos', 'Producción'],
+                    required: false
+                },
+                {
+                    id: 'modalInputSexo',
+                    label: 'Sexo',
+                    type: 'select',
+                    options: ['Masculino', 'Femenino', 'Otro'],
+                    required: false
+                },
+                { 
+                    id: 'modalInputEdad', 
+                    label: 'Edad', 
+                    type: 'number', 
+                    required: true,
+                    validation: (input) => {
+                        input.setAttribute('min', '18');
+                        input.setAttribute('max', '65');
+                    }
+                }
         ],
         'caja': [
             { 
                 id: 'modalInput1', 
                 label: 'Descripcion', 
                 type: 'text', 
-                required: true },
+                required: true 
+            },
             { 
                 id: 'modalInput2', 
                 label: 'Monto Apertura', 
                 type: 'number', 
-                required: true },
+                required: true 
+            }
         ]
     };
     

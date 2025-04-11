@@ -204,6 +204,11 @@ body, button, input {
     white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
 }
 
+.caja-options {
+    width: 20%; /* Ajusta el ancho según sea necesario */
+    white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
+}
+
 .crud__table {
     width: 100%;
     border-collapse: collapse;
@@ -280,7 +285,7 @@ main {
 /* Ajustar el ancho de la columna ID en la tabla de ALMACÉN */
 #almacenBody td:first-child, 
 #almacenBody th:first-child {
-    width: 50px; /* Ajusta el ancho según sea necesario */
+    width: 20px; /* Ajusta el ancho según sea necesario */
     text-align: center; /* Centrar el contenido */
 }
 
@@ -301,8 +306,15 @@ main {
 /* Ajustar el ancho de la columna Stock en la tabla de ALMACÉN */
 #almacenBody td:nth-child(4), 
 #almacenBody th:nth-child(4) {
-    width: 90px; /* Ajusta el ancho según sea necesario */
-    text-align: right; /* Alinear el texto a la derecha */
+    width: 60px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Alinear el texto a la derecha */
+}
+
+/* Ajustar el ancho de la columna Precio en la tabla de ALMACÉN */
+#almacenBody td:nth-child(5), 
+#almacenBody th:nth-child(5) {
+    width: 60px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Alinear el texto a la derecha */
 }
 
 /* Ajustar el ancho de la columna Entrada en la tabla de ALMACÉN */
@@ -329,50 +341,45 @@ main {
 /* Ajustar el ancho de la columna ID en la tabla de TRABAJADORES */
 #trabajadoresBody td:first-child, 
 #trabajadoresBody th:first-child {
-    width: 50px; /* Ajusta el ancho según sea necesario */
+    width: 20px; /* Ajusta el ancho según sea necesario */
     text-align: center; /* Centrar el contenido */
 }
 
 /* Ajustar el ancho de la columna Nº Trabajador en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(2), 
 #trabajadoresBody th:nth-child(2) {
-    width: 30px; /* Ajusta el ancho según sea necesario */
+    width: 140px; /* Ajusta el ancho según sea necesario */
     text-align: center; /* Centrar el contenido */
 }
 
-/* Ajustar el ancho de la columna Nombre y Apellidos en la tabla de TRABAJADORES */
-#trabajadoresBody td:nth-child(3), 
-#trabajadoresBody th:nth-child(3) {
-    width: 240px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el texto a la izquierda */
-}
+
 
 /* Ajustar el ancho de la columna Cargo en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(4), 
 #trabajadoresBody th:nth-child(4) {
-    width: 150px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el texto a la izquierda */
+    width: 130px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
 }
 
 /* Ajustar el ancho de la columna Área en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(5), 
 #trabajadoresBody th:nth-child(5) {
     width: 150px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el contenido a la izquierda */
+    text-align: center; /* Centrar el contenido */
 }
 
 /* Ajustar el ancho de la columna Sexo en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(6), 
 #trabajadoresBody th:nth-child(6) {
     width: 50px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el contenido a la izquierda */
+    text-align: center; /* Centrar el contenido */
 }
 
-/* Ajustar el ancho de la columna Sexo en la tabla de TRABAJADORES */
+/* Ajustar el ancho de la columna Edad en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(7), 
 #trabajadoresBody th:nth-child(7) {
-    width: 50px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el contenido a la izquierda */
+    width: 40px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
 }
 
 /* Centrar encabezados de tabla */
@@ -402,9 +409,33 @@ main {
 }
 
 /* Ajustar el ancho de la columna Fecha Registro en la tabla de CAJA */
-#cajaBody td:nth-child(5),
-#cajaBody th:nth-child(5) {
-    width: 160px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el contenido a la izquierda */
+/* Añadir esto */
+#cajaBody td:nth-child(5), /* Monto Apertura */
+#cajaBody td:nth-child(6), /* Monto Disponible */
+#cajaBody td:nth-child(7) { /* Monto Cierre */
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    width: 170px;
 }
 
+/* Ajustar el ancho de la columna Estado en la tabla de CAJA */
+#cajaBody td:nth-child(8),
+#cajaBody th:nth-child(8) {
+    width: 100px; /* Ajusta el ancho según sea necesario */
+    text-align: center; /* Centrar el contenido */
+}
+
+/* Agrega esto a styles.css */
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.25rem;
+}
+
+.form-select:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
+}
