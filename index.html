@@ -42,8 +42,13 @@
 
                 <!-- Sección Clientes -->
                 <div id="clientes" class="content-section">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="clientes">Agregar</button>
-                    <table class="table table-bordered mt-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="clientes">Agregar</button>
+                        <div class="col-md-4">
+                            <input type="text" id="searchClientes" class="form-control" placeholder="Buscar por DNI, Nombre o RUC...">
+                        </div>
+                    </div>
+                    <table class="table table-bordered mt-1">
                         <thead>
                             <tr>
                                 <th class="text-center">ID</th>
@@ -110,8 +115,13 @@
 
                 <!-- Sección Trabajadores -->
                 <div id="trabajadores" class="content-section d-none">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="trabajadores">Agregar</button>
-                    <table class="table table-bordered mt-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="trabajadores">Agregar</button>
+                        <div class="col-md-4">
+                            <input type="text" id="searchTrabajadores" class="form-control" placeholder="Buscar por Nº, Nombre, Cargo o Área...">
+                        </div>
+                    </div>
+                    <table class="table table-bordered mt-1">
                         <thead>
                             <tr>
                                 <th class="text-center">ID</th>

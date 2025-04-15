@@ -529,12 +529,17 @@ window.verDetalleCaja = function(index) {
     function saveDataToLocalStorage(key, data) {
         try {
             localStorage.setItem(key, JSON.stringify(data));
+            if (key === 'clientesData') {
+                actualizarCacheClientes();
+            }
+            if (key === 'trabajadoresData') {
+                actualizarCacheTrabajadores();
+            }
             console.log(`✅ Guardado en localStorage: ${key}`, data);
         } catch (error) {
             console.error("❌ Error al guardar en localStorage:", error);
         }
     }
-
     // Función para cargar datos desde localStorage
     function loadDataFromLocalStorage(key) {
         try {
@@ -1288,6 +1293,106 @@ window.verDetalleCaja = function(index) {
         ]
     };
     
+    // Actualizar la caché cuando se modifiquen los datos
+function actualizarCacheClientes() {
+    clientesCache = loadDataFromLocalStorage('clientesData') || [];
+}
+
+function buscarClientes(terminoBusqueda) {
+    const tablaBody = document.querySelector('#clientesBody');
+    
+    if (!terminoBusqueda) {
+        renderTable('clientesData', '#clientesBody');
+        return;
+    }
+
+    if (clientesCache.length === 0) {
+        actualizarCacheClientes();
+    }
+
+    const resultados = clientesCache.filter(cliente => {
+        return (
+            (cliente.dni && cliente.dni.toLowerCase().includes(terminoBusqueda)) ||
+            (cliente.nombre && cliente.nombre.toLowerCase().includes(terminoBusqueda)) ||
+            (cliente.ruc && cliente.ruc.toLowerCase().includes(terminoBusqueda))
+        );
+    });
+
+    tablaBody.innerHTML = '';
+    
+    resultados.forEach((item, index) => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.dni || ''}</td>
+            <td>${item.nombre || ''}</td>
+            <td>${item.telefono || ''}</td>
+            <td>${item.ruc || ''}</td>
+            <td>${item.direccion || ''}</td>
+            <td>${item.referencia || ''}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editRow('clientesData', ${clientesCache.findIndex(c => c.dni === item.dni)}, '#clientesBody')">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('clientesData', ${clientesCache.findIndex(c => c.dni === item.dni)}, '#clientesBody')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tablaBody.appendChild(newRow);
+    });
+}
+
+
+function actualizarCacheTrabajadores() {
+    trabajadoresCache = loadDataFromLocalStorage('trabajadoresData') || [];
+}
+
+function buscarTrabajadores(terminoBusqueda) {
+    const tablaBody = document.querySelector('#trabajadoresBody');
+    
+    if (!terminoBusqueda) {
+        renderTable('trabajadoresData', '#trabajadoresBody');
+        return;
+    }
+
+    if (trabajadoresCache.length === 0) {
+        actualizarCacheTrabajadores();
+    }
+
+    const resultados = trabajadoresCache.filter(trabajador => {
+        return (
+            (trabajador.numeroTrabajador && trabajador.numeroTrabajador.toLowerCase().includes(terminoBusqueda)) ||
+            (trabajador.nombre && trabajador.nombre.toLowerCase().includes(terminoBusqueda)) ||
+            (trabajador.cargo && trabajador.cargo.toLowerCase().includes(terminoBusqueda)) ||
+            (trabajador.area && trabajador.area.toLowerCase().includes(terminoBusqueda))
+        );
+    });
+
+    tablaBody.innerHTML = '';
+    
+    resultados.forEach((item, index) => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.numeroTrabajador || ''}</td>
+            <td>${item.nombre || ''}</td>
+            <td>${item.cargo || ''}</td>
+            <td>${item.area || ''}</td>
+            <td>${item.sexo || ''}</td>
+            <td>${item.edad || ''}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editRow('trabajadoresData', ${trabajadoresCache.findIndex(t => t.numeroTrabajador === item.numeroTrabajador)}, '#trabajadoresBody')">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('trabajadoresData', ${trabajadoresCache.findIndex(t => t.numeroTrabajador === item.numeroTrabajador)}, '#trabajadoresBody')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tablaBody.appendChild(newRow);
+    });
+}
     
 
     setupForm('formClientes', '#clientesBody', 'clientesData');
@@ -1299,4 +1404,17 @@ window.verDetalleCaja = function(index) {
     renderTable('almacenData', '#almacenBody');
     renderTable('trabajadoresData', '#trabajadoresBody');
     renderTable('cajaData', '#cajaBody');
+
+
+    let clientesCache = [];
+
+document.getElementById('searchClientes').addEventListener('input', function() {
+    buscarClientes(this.value.toLowerCase());
+});
+
+    let trabajadoresCache = [];
+
+document.getElementById('searchTrabajadores').addEventListener('input', function() {
+    buscarTrabajadores(this.value.toLowerCase());
+});
 });
