@@ -144,6 +144,48 @@ body, button, input {
     margin-left: 0; /* Ajusta el contenido principal */
 }
 
+/* Estilo para los botones de eliminar con íconos */
+.btn-danger svg, .btn-danger i {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    color: white; /* Asegura que el ícono sea blanco */
+}
+
+/* Estilo para los botones con íconos */
+.btn-sm svg, .btn-sm i {
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+/* Estilo para el botón de cierre opaco */
+.opacity-50 {
+    opacity: 0.5;
+}
+
+/* Estilo para el botón deshabilitado */
+.btn:disabled {
+    cursor: not-allowed;
+    pointer-events: all !important;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Espaciado entre botones */
+.ms-1 {
+    margin-left: 0.25rem !important;
+}
+
+/* Asegurar que los botones mantengan el mismo tamaño */
+.table-options .btn, .caja-options .btn {
+    min-width: 30px;
+    margin: 2px;
+}
+
 .button {
     padding: 5px 10px;
     border: none;
@@ -199,13 +241,36 @@ body, button, input {
     pointer-events: none;
 }
 
+/* Estilo para el botón de cargar caja */
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+.btn-info:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Estilo para el ícono de dinero */
+.svg-inline--fa.fa-money-bill-wave {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+}
+
 .table-options {
-    width: 11%; /* Ajusta el ancho según sea necesario */
+    width: 2%; /* Ajusta el ancho según sea necesario */
     white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
 }
 
 .caja-options {
-    width: 20%; /* Ajusta el ancho según sea necesario */
+    width: 11%; /* Ajusta el ancho según sea necesario */
     white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
 }
 
@@ -348,8 +413,10 @@ main {
 /* Ajustar el ancho de la columna Nº Trabajador en la tabla de TRABAJADORES */
 #trabajadoresBody td:nth-child(2), 
 #trabajadoresBody th:nth-child(2) {
-    width: 140px; /* Ajusta el ancho según sea necesario */
+    width: 100px;
     text-align: center; /* Centrar el contenido */
+    font-weight: bold; 
+    letter-spacing: 0.5px; 
 }
 
 
@@ -397,8 +464,10 @@ main {
 /* Ajustar el ancho de la columna Codigo en la tabla de CAJA */
 #cajaBody td:nth-child(2),
 #cajaBody th:nth-child(2) {
-    width: 20px; /* Ajusta el ancho según sea necesario */
-    text-align: left; /* Alinear el contenido a la izquierda */
+    width: 120px; /* Ancho suficiente para el código */
+    text-align: center;
+    
+    font-weight: bold;
 }
 
 /* Ajustar el ancho de la columna Monto en la tabla de CAJA */

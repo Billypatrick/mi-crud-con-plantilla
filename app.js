@@ -143,6 +143,50 @@ document.addEventListener('DOMContentLoaded', function () {
         
         return input;
     }
+
+    // Migración para códigos únicos (solo se ejecutará una vez)
+    const hasMigratedCodes = localStorage.getItem('migration_codes_v1');
+    if (!hasMigratedCodes) {
+        const cajaData = JSON.parse(localStorage.getItem('cajaData')) || [];
+        const existingCodes = [];
+        
+        const migratedData = cajaData.map(item => {
+            if (!item.codigo || item.codigo.startsWith('CO')) {
+                return {
+                    ...item,
+                    codigo: generarCodigoUnico(existingCodes)
+                };
+            }
+            existingCodes.push(item.codigo);
+            return item;
+        });
+        
+        localStorage.setItem('cajaData', JSON.stringify(migratedData));
+        localStorage.setItem('migration_codes_v1', 'true');
+        console.log('✅ Migración de códigos completada');
+    }
+
+    // Migración para números de trabajador únicos
+    const hasMigratedTrabajadores = localStorage.getItem('migration_trabajadores_v1');
+    if (!hasMigratedTrabajadores) {
+        const trabajadoresData = JSON.parse(localStorage.getItem('trabajadoresData')) || [];
+        const existingNumbers = [];
+        
+        const migratedData = trabajadoresData.map(item => {
+            if (!item.numeroTrabajador || !item.numeroTrabajador.startsWith('TR')) {
+                return {
+                    ...item,
+                    numeroTrabajador: generarNumeroTrabajadorUnico(existingNumbers)
+                };
+            }
+            existingNumbers.push(item.numeroTrabajador);
+            return item;
+        });
+        
+        localStorage.setItem('trabajadoresData', JSON.stringify(migratedData));
+        localStorage.setItem('migration_trabajadores_v1', 'true');
+        console.log('✅ Migración de números de trabajador completada');
+    }
     
         // --- MIGRACIÓN DE DATOS (COLOCAR JUSTO AQUÍ) ---
         const hasMigrated = localStorage.getItem('migration_v1');
@@ -389,7 +433,7 @@ window.verDetalleCaja = function(index) {
             'trabajadores': {
                 key: 'trabajadoresData',
                 tableBodyId: '#trabajadoresBody',
-                validate: function () {
+                validate: function() {
                     const inputNombre = document.getElementById('modalInputNombre')?.value.trim();
                     const inputCargo = document.getElementById('modalInputCargo')?.value.trim();
                     const inputArea = document.getElementById('modalInputArea')?.value;
@@ -406,20 +450,24 @@ window.verDetalleCaja = function(index) {
                         return false;
                     }
 
+                    // Obtener números existentes
+                    const existingData = loadDataFromLocalStorage('trabajadoresData') || [];
+                    const existingNumbers = existingData.map(item => item.numeroTrabajador);
+
                     return {
                         nombre: inputNombre,
                         cargo: inputCargo,
                         area: inputArea || '',
                         sexo: inputSexo || '',
                         edad: inputEdad,
-                        numeroTrabajador: `TR${String(loadDataFromLocalStorage('trabajadoresData').length + 1).padStart(3, '0')}`
+                        numeroTrabajador: generarNumeroTrabajadorUnico(existingNumbers)
                     };
                 }
             },
             'caja': {
                 key: 'cajaData',
                 tableBodyId: '#cajaBody',
-                validate: function () {
+                validate: function() {
                     const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
                     const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
                     
@@ -428,37 +476,18 @@ window.verDetalleCaja = function(index) {
                         return false;
                     }
                     
+                    // Obtener códigos existentes para asegurar unicidad
+                    const existingData = loadDataFromLocalStorage('cajaData') || [];
+                    const existingCodes = existingData.map(item => item.codigo);
+                    
                     return {
                         fecha: new Date().toLocaleString('es-PE'),
-                        codigo: `CO${String(loadDataFromLocalStorage('cajaData').length + 1).padStart(3, '0')}`,
+                        codigo: generarCodigoUnico(existingCodes),
                         descripcion: inputDescripcion,
                         montoApertura: parseFloat(inputMontoApertura).toFixed(2),
                         montoDisponible: parseFloat(inputMontoApertura).toFixed(2),
                         montoCierre: '0.00',
-                        estado: 'Abierto' // Estado automático al crear
-                    };
-                }
-            },
-            'caja': {
-                key: 'cajaData',
-                tableBodyId: '#cajaBody',
-                validate: function () {
-                    const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
-                    const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
-                    
-                    if (!inputDescripcion || !inputMontoApertura) {
-                        alert("⚠️ Todos los campos son obligatorios.");
-                        return false;
-                    }
-                    
-                    return {
-                        fecha: new Date().toLocaleString('es-PE'),
-                        codigo: `CO${String(loadDataFromLocalStorage('cajaData').length + 1).padStart(3, '0')}`,
-                        descripcion: inputDescripcion,
-                        montoApertura: parseFloat(inputMontoApertura).toFixed(2),
-                        montoDisponible: parseFloat(inputMontoApertura).toFixed(2),
-                        montoCierre: '0.00',
-                        estado: 'Abierto' // Estado automático al crear
+                        estado: 'Abierto'
                     };
                 }
             }
@@ -543,8 +572,12 @@ window.verDetalleCaja = function(index) {
                     <td>${item.direccion || ''}</td>
                     <td>${item.referencia || ''}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
             } else if (key === 'almacenData') {
@@ -560,8 +593,12 @@ window.verDetalleCaja = function(index) {
                     <td>${item.salida || '0'}</td>
                     <td>S/ ${importeInventario}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
             } else if (key === 'trabajadoresData') {
@@ -574,8 +611,12 @@ window.verDetalleCaja = function(index) {
                     <td>${item.sexo || ''}</td>
                     <td>${item.edad || ''}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
+                        <button class="btn btn-warning btn-sm" onclick="editRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
             } else if (key === 'cajaData') {
@@ -591,12 +632,24 @@ window.verDetalleCaja = function(index) {
                     ${item.estado || 'Abierto'}
                     </td>
                     <td>
-                        <button class="btn btn-success btn-sm" onclick="verDetalleCaja(${index})">Ver</button>
-                        <button class="btn btn-warning btn-sm mt-1" onclick="editRow('${key}', ${index}, '${tableBodyId}')">Editar</button>
-                        <button class="btn btn-danger btn-sm mt-1" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">Eliminar</button>
-                        ${item.estado !== 'Cerrado' ? 
-                            `<button class="btn btn-dark btn-sm mt-1" onclick="cerrarCaja(${index})">Cerrar Caja</button>` : 
-                            ''}
+                        <button class="btn btn-success btn-sm" onclick="verDetalleCaja(${index})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-primary btn-sm mt-1 ms-1" onclick="cargarCaja(${index})" ${item.estado === 'Cerrado' ? 'disabled' : ''}>
+                            <svg class="svg-inline--fa fa-plus" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em">
+                                <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
+                            </svg>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn btn-sm mt-1 ${item.estado === 'Cerrado' ? 'btn-secondary opacity-50' : 'btn-dark'}" 
+                            onclick="${item.estado === 'Cerrado' ? '' : 'cerrarCaja(' + index + ')'}" 
+                            ${item.estado === 'Cerrado' ? 'disabled' : ''}>
+                            <svg class="svg-inline--fa fa-lock" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em">
+                                <path fill="currentColor" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"></path>
+                            </svg>
+                        </button>
                     </td>
                 `;
             }
@@ -796,27 +849,134 @@ window.verDetalleCaja = function(index) {
         const editModal = new bootstrap.Modal(document.getElementById('editDataModal'));
         editModal.show();
     };
+
+    window.cargarCaja = function(index) {
+        const cajaData = loadDataFromLocalStorage('cajaData');
+        const registro = cajaData[index];
+        
+        Swal.fire({
+            title: 'Cargar Monto a Caja',
+            html: `
+                <p>Monto Actual: S/ ${registro.montoDisponible || '0.00'}</p>
+                <input id="swalMontoCarga" type="number" class="swal2-input" 
+                       placeholder="Monto a cargar" 
+                       step="0.01" min="0.01" required>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Cargar',
+            cancelButtonText: 'Cancelar',
+            focusConfirm: false,
+            preConfirm: () => {
+                const input = document.getElementById('swalMontoCarga');
+                const montoCarga = parseFloat(input.value);
+                
+                if (isNaN(montoCarga)) {
+                    Swal.showValidationMessage('Ingrese un monto válido');
+                    return false;
+                }
+                if (montoCarga <= 0) {
+                    Swal.showValidationMessage('El monto debe ser mayor a cero');
+                    return false;
+                }
+                
+                return montoCarga.toFixed(2);
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Actualizar el monto disponible
+                const montoActual = parseFloat(registro.montoDisponible) || 0;
+                registro.montoDisponible = (montoActual + parseFloat(result.value)).toFixed(2);
+                
+                // Guardar cambios
+                saveDataToLocalStorage('cajaData', cajaData);
+                
+                // Actualizar la tabla
+                renderTable('cajaData', '#cajaBody');
+                
+                // Mostrar confirmación
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Carga Exitosa!',
+                    text: `Nuevo monto disponible: S/ ${registro.montoDisponible}`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        });
+    };
+
+    function generarCodigoUnico(existingCodes = []) {
+        const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Eliminamos caracteres ambiguos
+        let codigo;
+        let intentos = 0;
+        const maxIntentos = 100;
+        
+        do {
+            codigo = 'CAJ-';
+            for (let i = 0; i < 4; i++) {
+                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            intentos++;
+            
+            if (intentos >= maxIntentos) {
+                // Fallback si por alguna razón no se genera un código único
+                codigo += Date.now().toString().slice(-3);
+                break;
+            }
+        } while (existingCodes.includes(codigo));
+        
+        return codigo;
+    }
+
+    function generarNumeroTrabajadorUnico(existingNumbers = []) {
+        const prefix = 'TR-';
+        let numero;
+        let intentos = 0;
+        const maxIntentos = 100;
+        
+        do {
+            // Genera 4 dígitos aleatorios (1000-9999)
+            numero = prefix + Math.floor(1000 + Math.random() * 9000);
+            intentos++;
+            
+            if (intentos >= maxIntentos) {
+                // Fallback con timestamp si no se encuentra único
+                numero = prefix + Date.now().toString().slice(-4);
+                break;
+            }
+        } while (existingNumbers.includes(numero));
+        
+        return numero;
+    }
     
     function addDataToTable(key, tableBodyId, data) {
         console.log(`➕ Intentando agregar datos a la tabla: ${key}`, data);
     
+        const currentData = loadDataFromLocalStorage(key);
+        const newData = { ...data }; // Copia el objeto para no modificar el original
+    
+        // Validaciones específicas para cada tabla
         if (key === 'clientesData') {
-            // Validar solo los campos obligatorios
-            if (!data.dni?.trim() || !data.nombre?.trim() || !data.telefono?.trim() || !data.direccion?.trim() || !data.referencia?.trim()) {
+            if (!newData.dni?.trim() || !newData.nombre?.trim() || !newData.telefono?.trim() || 
+                !newData.direccion?.trim() || !newData.referencia?.trim()) {
                 console.warn("⚠️ Todos los campos obligatorios deben ser completados para Clientes.");
                 alert("⚠️ Todos los campos obligatorios deben ser completados.");
                 return;
             }
         }
     
-        const currentData = loadDataFromLocalStorage(key);
-        const newData = { 
-            id: currentData.length + 1, 
-            numeroTrabajador: `TR${String(currentData.length + 1).padStart(3, '0')}`, // Generar Nº Trabajador automáticamente
-            ...data,
-            codigo: `CO${String(currentData.length + 1).padStart(3, '0')}`, // Generar Nº Trabajador automáticamente
-            ...data
-        };
+        // Generar número único para trabajadores si no existe
+        if (key === 'trabajadoresData' && !newData.numeroTrabajador) {
+            const existingNumbers = currentData.map(item => item.numeroTrabajador);
+            newData.numeroTrabajador = generarNumeroTrabajadorUnico(existingNumbers);
+        }
+    
+        // Solo genera nuevo código si no existe uno (para ediciones)
+        if (key === 'cajaData' && !newData.codigo) {
+            const existingCodes = currentData.map(item => item.codigo);
+            newData.codigo = generarCodigoUnico(existingCodes);
+        }
+    
         currentData.push(newData);
         saveDataToLocalStorage(key, currentData);
     
