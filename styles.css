@@ -181,7 +181,7 @@ body, button, input {
 }
 
 /* Asegurar que los botones mantengan el mismo tamaño */
-.table-options .btn, .caja-options .btn {
+.table-options .btn {
     min-width: 30px;
     margin: 2px;
 }
@@ -358,7 +358,7 @@ main {
 #almacenBody td:nth-child(2), 
 #almacenBody th:nth-child(2) {
     width: 120px; /* Espacio suficiente para diez caracteres */
-    text-align: left; /* Alinear el texto a la izquierda */
+    text-align: center; /* Centrar el contenido */
 }
 
 /* Ajustar el ancho de la columna Descripcion en la tabla de ALMACÉN */
@@ -372,14 +372,14 @@ main {
 #almacenBody td:nth-child(4), 
 #almacenBody th:nth-child(4) {
     width: 60px; /* Ajusta el ancho según sea necesario */
-    text-align: center; /* Alinear el texto a la derecha */
+    text-align: center; /* Centrar el contenido */
 }
 
 /* Ajustar el ancho de la columna Precio en la tabla de ALMACÉN */
 #almacenBody td:nth-child(5), 
 #almacenBody th:nth-child(5) {
     width: 60px; /* Ajusta el ancho según sea necesario */
-    text-align: center; /* Alinear el texto a la derecha */
+    text-align: center; 
 }
 
 /* Ajustar el ancho de la columna Entrada en la tabla de ALMACÉN */
@@ -406,7 +406,7 @@ main {
 /* Ajustar el ancho de la columna ID en la tabla de TRABAJADORES */
 #trabajadoresBody td:first-child, 
 #trabajadoresBody th:first-child {
-    width: 20px; /* Ajusta el ancho según sea necesario */
+    width: 50px; /* Ajusta el ancho según sea necesario */
     text-align: center; /* Centrar el contenido */
 }
 
@@ -473,7 +473,7 @@ main {
 /* Ajustar el ancho de la columna Monto en la tabla de CAJA */
 #cajaBody td:nth-child(3),
 #cajaBody th:nth-child(3) {
-    width: 200px; /* Ajusta el ancho según sea necesario */
+    width: 205px; /* Ajusta el ancho según sea necesario */
     text-align: center; /* Centrar el contenido */
 }
 
@@ -535,6 +535,21 @@ main {
 }
 
 #searchTrabajadores:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilo para el buscador de almacén */
+#searchAlmacen {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%236c757d" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px 20px;
+    padding-right: 35px;
+    transition: all 0.3s;
+}
+
+#searchAlmacen:focus {
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }

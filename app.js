@@ -94,6 +94,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function createModalInput(field) {
         let input;
+
+        if (field.id) {
+            const existingInput = document.getElementById(field.id);
+            if (existingInput) {
+                existingInput.classList.remove('is-invalid');
+            }
+        }
         
         if (field.type === 'textarea') {
             input = document.createElement('textarea');
@@ -377,20 +384,43 @@ window.verDetalleCaja = function(index) {
                     const inputDNI = document.getElementById('modalInputDNI')?.value.trim();
                     const inputNombre = document.getElementById('modalInput1')?.value.trim();
                     const inputTelefono = document.getElementById('modalInput2')?.value.trim();
-                    const inputRUC = document.getElementById('modalInputRUC')?.value.trim();
                     const inputDireccion = document.getElementById('modalInputDireccion')?.value.trim();
                     const inputReferencia = document.getElementById('modalInputReferencia')?.value.trim();
-
-                    if (!inputDNI || !inputNombre || !inputTelefono || !inputDireccion || !inputReferencia) {
-                        alert("⚠️ Todos los campos obligatorios deben ser completados.");
+                
+                    let isValid = true;
+                
+                    // Validar cada campo y marcar si está vacío
+                    if (!inputDNI) {
+                        document.getElementById('modalInputDNI').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (!inputNombre) {
+                        document.getElementById('modalInput1').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (!inputTelefono) {
+                        document.getElementById('modalInput2').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (!inputDireccion) {
+                        document.getElementById('modalInputDireccion').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (!inputReferencia) {
+                        document.getElementById('modalInputReferencia').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                
+                    if (!isValid) {
+                        Swal.fire('Error', 'Todos los campos obligatorios deben ser completados', 'error');
                         return false;
                     }
-
+                
                     return {
                         dni: inputDNI,
                         nombre: inputNombre,
                         telefono: inputTelefono,
-                        ruc: inputRUC, // Puede estar vacío
+                        ruc: document.getElementById('modalInputRUC')?.value.trim() || '',
                         direccion: inputDireccion,
                         referencia: inputReferencia
                     };
@@ -401,17 +431,39 @@ window.verDetalleCaja = function(index) {
                 tableBodyId: '#almacenBody',
                 validate: function () {
                     const inputProducto = document.getElementById('modalInputProducto')?.value.trim();
-                    const inputDescripcion = document.getElementById('modalInputDescripcion')?.value.trim();
                     const inputStock = parseInt(document.getElementById('modalInputStock')?.value || 0);
                     const inputPrecio = parseFloat(document.getElementById('modalInputPrecio')?.value || 0);
                     const inputEntrada = parseInt(document.getElementById('modalInputEntrada')?.value || 0);
                     const inputSalida = parseInt(document.getElementById('modalInputSalida')?.value || 0);
-
-                    if (!inputProducto || isNaN(inputStock) || isNaN(inputPrecio) || isNaN(inputEntrada) || isNaN(inputSalida)) {
+                
+                    let isValid = true;
+                
+                    if (!inputProducto) {
+                        document.getElementById('modalInputProducto').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputStock)) {
+                        document.getElementById('modalInputStock').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputPrecio)) {
+                        document.getElementById('modalInputPrecio').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputEntrada)) {
+                        document.getElementById('modalInputEntrada').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputSalida)) {
+                        document.getElementById('modalInputSalida').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                
+                    if (!isValid) {
                         Swal.fire('Error', 'Todos los campos obligatorios deben ser completados correctamente', 'error');
                         return false;
                     }
-
+                
                     // Calcular stock final
                     const stockFinal = inputStock + inputEntrada - inputSalida;
                     
@@ -419,10 +471,10 @@ window.verDetalleCaja = function(index) {
                         Swal.fire('Error', 'La salida no puede ser mayor que el stock disponible', 'error');
                         return false;
                     }
-
+                
                     return {
                         producto: inputProducto,
-                        descripcion: inputDescripcion,
+                        descripcion: document.getElementById('modalInputDescripcion')?.value.trim() || '',
                         stock: stockFinal,
                         precio: inputPrecio.toFixed(2),
                         entrada: inputEntrada,
@@ -436,29 +488,45 @@ window.verDetalleCaja = function(index) {
                 validate: function() {
                     const inputNombre = document.getElementById('modalInputNombre')?.value.trim();
                     const inputCargo = document.getElementById('modalInputCargo')?.value.trim();
-                    const inputArea = document.getElementById('modalInputArea')?.value;
-                    const inputSexo = document.getElementById('modalInputSexo')?.value;
                     const inputEdad = parseInt(document.getElementById('modalInputEdad')?.value);
+                    
+                    let isValid = true;
 
-                    if (!inputNombre || !inputCargo || isNaN(inputEdad)) {
+                    // Validar campos obligatorios
+                    if (!inputNombre) {
+                        document.getElementById('modalInputNombre').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (!inputCargo) {
+                        document.getElementById('modalInputCargo').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputEdad)) {
+                        document.getElementById('modalInputEdad').classList.add('is-invalid');
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
                         Swal.fire('Error', 'Nombre, Cargo y Edad son campos obligatorios', 'error');
                         return false;
                     }
 
+                    // Validar rango de edad
                     if (inputEdad < 18 || inputEdad > 100) {
+                        document.getElementById('modalInputEdad').classList.add('is-invalid');
                         Swal.fire('Error', 'La edad debe estar entre 18 y 100 años', 'error');
                         return false;
                     }
 
-                    // Obtener números existentes
+                    // Obtener números existentes para generar uno único
                     const existingData = loadDataFromLocalStorage('trabajadoresData') || [];
                     const existingNumbers = existingData.map(item => item.numeroTrabajador);
 
                     return {
                         nombre: inputNombre,
                         cargo: inputCargo,
-                        area: inputArea || '',
-                        sexo: inputSexo || '',
+                        area: document.getElementById('modalInputArea')?.value || '',
+                        sexo: document.getElementById('modalInputSexo')?.value || '',
                         edad: inputEdad,
                         numeroTrabajador: generarNumeroTrabajadorUnico(existingNumbers)
                     };
@@ -469,23 +537,35 @@ window.verDetalleCaja = function(index) {
                 tableBodyId: '#cajaBody',
                 validate: function() {
                     const inputDescripcion = document.getElementById('modalInput1')?.value.trim();
-                    const inputMontoApertura = document.getElementById('modalInput2')?.value.trim();
+                    const inputMontoApertura = parseFloat(document.getElementById('modalInput2')?.value);
                     
-                    if (!inputDescripcion || !inputMontoApertura) {
-                        alert("⚠️ Todos los campos son obligatorios.");
+                    let isValid = true;
+
+                    // Validar campos obligatorios
+                    if (!inputDescripcion) {
+                        document.getElementById('modalInput1').classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    if (isNaN(inputMontoApertura) || inputMontoApertura <= 0) {
+                        document.getElementById('modalInput2').classList.add('is-invalid');
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        Swal.fire('Error', 'Descripción y Monto Apertura son campos obligatorios', 'error');
                         return false;
                     }
-                    
-                    // Obtener códigos existentes para asegurar unicidad
+
+                    // Obtener códigos existentes para generar uno único
                     const existingData = loadDataFromLocalStorage('cajaData') || [];
                     const existingCodes = existingData.map(item => item.codigo);
-                    
+
                     return {
                         fecha: new Date().toLocaleString('es-PE'),
                         codigo: generarCodigoUnico(existingCodes),
                         descripcion: inputDescripcion,
-                        montoApertura: parseFloat(inputMontoApertura).toFixed(2),
-                        montoDisponible: parseFloat(inputMontoApertura).toFixed(2),
+                        montoApertura: inputMontoApertura.toFixed(2),
+                        montoDisponible: inputMontoApertura.toFixed(2),
                         montoCierre: '0.00',
                         estado: 'Abierto'
                     };
@@ -636,28 +716,26 @@ window.verDetalleCaja = function(index) {
                     <td class="text-white fw-bold ${item.estado === 'Cerrado' ? 'bg-danger' : 'bg-success'}">
                     ${item.estado || 'Abierto'}
                     </td>
-                    <td>
+                    <td class="caja-options">
+                    <div class="d-flex flex-wrap gap-1 justify-content-center">
                         <button class="btn btn-success btn-sm" onclick="verDetalleCaja(${index})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-primary btn-sm mt-1 ms-1" onclick="cargarCaja(${index})" ${item.estado === 'Cerrado' ? 'disabled' : ''}>
-                            <svg class="svg-inline--fa fa-plus" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em">
-                                <path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path>
-                            </svg>
+                        <button class="btn btn-primary btn-sm" onclick="cargarCaja(${index})" ${item.estado === 'Cerrado' ? 'disabled' : ''}>
+                            <i class="fas fa-plus"></i>
                         </button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRow('${key}', ${index}, '${tableBodyId}')">
                             <i class="fas fa-trash"></i>
                         </button>
-                        <button class="btn btn-sm mt-1 ${item.estado === 'Cerrado' ? 'btn-secondary opacity-50' : 'btn-dark'}" 
+                        <button class="btn btn-sm ${item.estado === 'Cerrado' ? 'btn-secondary opacity-50' : 'btn-dark'}" 
                             onclick="${item.estado === 'Cerrado' ? '' : 'cerrarCaja(' + index + ')'}" 
                             ${item.estado === 'Cerrado' ? 'disabled' : ''}>
-                            <svg class="svg-inline--fa fa-lock" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em">
-                                <path fill="currentColor" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"></path>
-                            </svg>
+                            <i class="fas fa-lock"></i>
                         </button>
-                    </td>
-                `;
-            }
+                    </div>
+                </td>
+            `;
+        }
     
             newRow.innerHTML = rowContent;
             tableBody.appendChild(newRow);
@@ -1394,6 +1472,59 @@ function buscarTrabajadores(terminoBusqueda) {
     });
 }
     
+function actualizarCacheAlmacen() {
+    almacenCache = loadDataFromLocalStorage('almacenData') || [];
+}
+
+function buscarAlmacen(terminoBusqueda) {
+    const tablaBody = document.querySelector('#almacenBody');
+    
+    if (!terminoBusqueda) {
+        renderTable('almacenData', '#almacenBody');
+        return;
+    }
+
+    if (almacenCache.length === 0) {
+        actualizarCacheAlmacen();
+    }
+
+    const resultados = almacenCache.filter(item => {
+        const termino = terminoBusqueda.toLowerCase();
+        return (
+            (item.producto && item.producto.toLowerCase().includes(termino)) ||
+            (item.descripcion && item.descripcion.toLowerCase().includes(termino))
+        );
+    });
+
+    tablaBody.innerHTML = '';
+    
+    resultados.forEach((item, index) => {
+        const importeInventario = (item.stock * parseFloat(item.precio || 0)).toFixed(2);
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.producto || ''}</td>
+            <td>${item.descripcion || ''}</td>
+            <td>${item.stock || '0'}</td>
+            <td>S/ ${parseFloat(item.precio || 0).toFixed(2)}</td>
+            <td>${item.entrada || '0'}</td>
+            <td>${item.salida || '0'}</td>
+            <td>S/ ${importeInventario}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editRow('almacenData', ${almacenCache.findIndex(a => a.producto === item.producto)}, '#almacenBody')">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('almacenData', ${almacenCache.findIndex(a => a.producto === item.producto)}, '#almacenBody')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tablaBody.appendChild(newRow);
+    });
+}
+
+
+
 
     setupForm('formClientes', '#clientesBody', 'clientesData');
     setupForm('formAlmacen', '#almacenBody', 'almacenData');
@@ -1416,5 +1547,11 @@ document.getElementById('searchClientes').addEventListener('input', function() {
 
 document.getElementById('searchTrabajadores').addEventListener('input', function() {
     buscarTrabajadores(this.value.toLowerCase());
+});
+
+    let almacenCache = [];
+
+document.getElementById('searchAlmacen').addEventListener('input', function() {
+    buscarAlmacen(this.value.toLowerCase());
 });
 });

@@ -80,7 +80,12 @@
 
                 <!-- Sección Almacén -->
                 <div id="almacen" class="content-section d-none">
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="almacen">Agregar</button>
+                    <div class="d-flex justify-content-between mb-3">
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDataModal" data-section="almacen">Agregar</button>
+                        <div class="col-md-4">
+                            <input type="text" id="searchAlmacen" class="form-control" placeholder="Buscar por producto o descripción...">
+                        </div>
+                    </div>
                     <table class="table table-bordered mt-4">
                         <thead>
                             <tr>
